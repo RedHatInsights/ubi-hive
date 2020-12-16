@@ -1,4 +1,4 @@
-# ubi-presto
+# ubi-hive
 
 Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgresql jdbc interfaces.
 
