@@ -1,4 +1,4 @@
-FROM quay.io/cloudservices/ubi-hadoop:3.3.0
+FROM quay.io/cloudservices/ubi-hadoop:3.3.0-001
 
 USER root
 
@@ -39,7 +39,8 @@ RUN curl -sLo ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
     && mkdir -p /.beeline \
     && mkdir -p $HOME/.beeline \
     && chown -R 1002:0 ${PREFIX} /var/lib/hive /user/hive/warehouse /.beeline $HOME/.beeline \
-    && chmod -R 774 ${PREFIX} /var/lib/hive /user/hive/warehouse /.beeline $HOME/.beeline /etc/passwd
+    && chmod -R 774 ${PREFIX} /var/lib/hive /user/hive/warehouse /.beeline $HOME/.beeline /etc/passwd \
+    && chmod -R g+rwx $(readlink -f ${JAVA_HOME}) $(readlink -f ${JAVA_HOME}/lib/security)
 
 # Link connectors
 RUN ln -s /usr/share/java/mysql-connector-java.jar ${HIVE_HOME}/lib/mysql-connector-java.jar \
