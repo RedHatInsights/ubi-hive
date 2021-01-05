@@ -1,4 +1,4 @@
-FROM quay.io/cloudservices/ubi-hadoop:3.3.0
+FROM quay.io/cloudservices/ubi-hadoop:3.3.0-001
 
 USER root
 
