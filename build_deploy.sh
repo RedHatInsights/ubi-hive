@@ -8,7 +8,7 @@ IMAGE_REPO="quay.io"
 ORG="cloudservices"
 APP="ubi-hive"
 IMAGE="${IMAGE_REPO}/${ORG}/${APP}"
-IMAGE_TAG=$(${SCRIPT_DIR}/get_hive_version.sh)
+IMAGE_TAG="$(${SCRIPT_DIR}/get_image_tag.sh)"
 
 if [[ -z "$QUAY_USER" || -z "$QUAY_TOKEN" ]]; then
     echo "QUAY_USER and QUAY_TOKEN must be set"

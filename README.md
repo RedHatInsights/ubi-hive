@@ -8,9 +8,10 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 
 1. Branch from `main`
 2. Make changes
-3. Commit and Push
-4. Create PR merging into `main`
-5. Get reviewed and approved
+3. Increment build number file value
+4. Commit and Push
+5. Create PR merging into `main`
+6. Get reviewed and approved
 
 ## Build new version of Presto
 
@@ -19,14 +20,17 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 3. Update `Dockerfile` : `ARG HIVE_VERSION` setting it to the version required.
 4. If ubi-hadoop image tag is out-of-date, change the FROM line in the Dockerfile to reference the correct hadoop image tag.
 5. Execute `get_hive_version.sh` to make sure that the output matches the new hive version.
-6. Run a test build by executing `pr_check.sh`
-7. If successful, then commit changes and push branch.
-8. Create a PR, this should execute a PR check script.
-9. If successful, get approval and merge.
+6. Increment the value in `image_build_num.txt`
+7. Run a test build by executing `pr_check.sh`
+8. If successful, then commit changes and push branch.
+9. Create a PR, this should execute a PR check script.
+10. If successful, get approval and merge.
 
 # Utility Scripts
 
 * `get_hive_version.sh` : Get the current hive version from the `Dockerfile`.
+* `get_image_tag.sh` : Return the image tag made from the hive version and the build number from `image_build_num.txt`
+* `docker-build-dev.sh` : Executes a local test build of the docker image.
 
 # Integration Scripts
 
