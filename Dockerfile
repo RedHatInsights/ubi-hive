@@ -6,11 +6,12 @@ USER root
 ARG HIVE_VERSION=3.1.2
 ARG MYSQL_CONNECTOR_VER=8.0.22-1
 ARG POSTGRESQL_JDBC_VER=42.2.18
+ARG APACHE_DERBY_VERSION=10.15.2.0
 
 # Container environment
 ENV PREFIX=/opt
 ENV HIVE_HOME=${PREFIX}/hive-${HIVE_VERSION}
-ENV HADOOP_CLASSPATH $HIVE_HOME/hcatalog/share/hcatalog/*:${HADOOP_CLASSPATH}
+ENV HADOOP_CLASSPATH=${HIVE_HOME}/lib:${HIVE_HOME}/hcatalog/share/hcatalog/*:${HADOOP_CLASSPATH}
 ENV PATH=${HIVE_HOME}/bin:${PATH}
 ENV TERM=linux
 ENV JAVA_HOME=/etc/alternatives/jre_11_openjdk
@@ -34,6 +35,12 @@ RUN curl -sLo ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
     && rm -f ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
     && ln -s ${HIVE_HOME} ${PREFIX}/hive \
     && ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${HIVE_HOME}/lib \
+    && for _JARFILE in $(ls ${HIVE_HOME}/lib/derby*.jar); do     mv ${_JARFILE} ${_JARFILE}xNOPE; done \
+    && curl -sLo ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz \
+            "https://downloads.apache.org//db/derby/db-derby-${APACHE_DERBY_VERSION}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz" \
+    && tar -C ${PREFIX} -zxf ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz "*.?ar" \
+    && cp ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib/lib/* ${HIVE_HOME}/lib/ \
+    && rm -rf ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz \
     && mkdir -p /var/lib/hive \
     && mkdir -p /user/hive/warehouse \
     && mkdir -p /.beeline \
