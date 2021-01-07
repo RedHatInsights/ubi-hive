@@ -42,14 +42,10 @@ USER root
 # PostgreSQL Repo
 RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
-# MySQL Repo
-RUN yum install -y https://dev.mysql.com/get/mysql80-community-release-el8-1.noarch.rpm
-
 RUN yum -y update && \
     yum install --setopt=skip_missing_names_on_install=False -y \
         postgresql-jdbc \
         openssl \
-        mysql-connector-java \
     && yum clean all \
     && rm -rf /var/cache/yum
 
@@ -61,8 +57,6 @@ ENV JAVA_HOME=/etc/alternatives/jre
 
 # Configure Hadoop AWS Jars to be available to hive
 RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* $HIVE_HOME/lib
-# Configure MySQL connector jar to be available to hive
-RUN ln -s /usr/share/java/mysql-connector-java.jar "$HIVE_HOME/lib/mysql-connector-java.jar"
 # Configure Postgesql connector jar to be available to hive
 RUN ln -s /usr/share/java/postgresql-jdbc.jar "$HIVE_HOME/lib/postgresql-jdbc.jar"
 
