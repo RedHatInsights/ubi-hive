@@ -1,76 +1,85 @@
-FROM quay.io/cloudservices/ubi-hadoop:3.3.0-002
+FROM quay.io/centos/centos:centos7 as build
+
+ARG HIVE_VERSION=2.3.3
+ENV HIVE_RELEASE_TAG=rel/release-${HIVE_VERSION}
+ENV HIVE_RELEASE_TAG_RE=".*refs/tags/${HIVE_RELEASE_TAG}\$"
+
+RUN yum -y update && yum clean all
+
+RUN yum -y install --setopt=skip_missing_names_on_install=False centos-release-scl
+
+RUN yum -y install \
+        java-1.8.0-openjdk \
+        java-1.8.0-openjdk-devel \
+        rh-maven33 \
+        git \
+    && yum clean all \
+    && rm -rf /var/cache/yum
+
+# Originally, this was a *lot* of COPY layers
+RUN git clone -q \
+        -b $(git ls-remote --tags https://github.com/apache/hive | grep -E "${HIVE_RELEASE_TAG_RE}" | sed -E 's/.*refs.tags.(rel.*)/\1/g') \
+        --single-branch \
+        https://github.com/apache/hive.git \
+        /build
+
+WORKDIR /build
+
+RUN scl enable rh-maven33 'cd /build && mvn -B -e -T 1C -DskipTests=true -DfailIfNoTests=false -Dtest=false clean package -Pdist'
+
+FROM quay.io/cloudservices/ubi-hadoop:3.1.1-001
+
+# Keep this in sync with ARG HIVE_VERSION above
+ENV HIVE_VERSION=2.3.3
+ENV HIVE_HOME=/opt/hive
+ENV PATH=$HIVE_HOME/bin:$PATH
+
+RUN mkdir -p /opt
+WORKDIR /opt
 
 USER root
 
-# Container app versions
-ARG HIVE_VERSION=3.1.2
-ARG MYSQL_CONNECTOR_VER=8.0.22-1
-ARG POSTGRESQL_JDBC_VER=42.2.18
-ARG APACHE_DERBY_VERSION=10.15.2.0
+# PostgreSQL Repo
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
-# Container environment
-ENV PREFIX=/opt
-ENV HIVE_HOME=${PREFIX}/hive-${HIVE_VERSION}
-ENV HADOOP_CLASSPATH=${HIVE_HOME}/lib:${HIVE_HOME}/hcatalog/share/hcatalog/*:${HADOOP_CLASSPATH}
-ENV PATH=${HIVE_HOME}/bin:${PATH}
-ENV TERM=linux
-ENV JAVA_HOME=/etc/alternatives/jre_11_openjdk
-
-# Get connectors
-RUN set -x; \
-    MYSQL_JAVA_URL="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${MYSQL_CONNECTOR_VER}.el8.noarch.rpm" \
-    PG_JAVA_URL="https://jdbc.postgresql.org/download/postgresql-${POSTGRESQL_JDBC_VER}.jar" \
+RUN yum -y update && \
+    yum install --setopt=skip_missing_names_on_install=False -y \
+        postgresql-jdbc \
+        openssl \
     && yum clean all \
-    && rm -rf /var/cache/yum/* \
-    && yum install -y ${MYSQL_JAVA_URL} \
-    && yum clean all \
-    && rm -rf /var/cache/yum \
-    && curl -sLo /usr/share/java/postgresql-java.jar ${PG_JAVA_URL}
+    && rm -rf /var/cache/yum
 
-# Download and install Hive
-RUN curl -sLo ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
-         "https://downloads.apache.org/hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz" \
-    && tar -C ${PREFIX} -zxf  ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
-    && mv ${PREFIX}/apache-hive-${HIVE_VERSION}-bin ${HIVE_HOME} \
-    && rm -f ${PREFIX}/hive-${HIVE_VERSION}.tar.gz \
-    && ln -s ${HIVE_HOME} ${PREFIX}/hive \
-    && ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${HIVE_HOME}/lib \
-    && for _JARFILE in $(ls ${HIVE_HOME}/lib/derby*.jar); do     mv ${_JARFILE} ${_JARFILE}xNOPE; done \
-    && curl -sLo ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz \
-            "https://downloads.apache.org//db/derby/db-derby-${APACHE_DERBY_VERSION}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz" \
-    && tar -C ${PREFIX} -zxf ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz "*.?ar" \
-    && cp ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib/lib/* ${HIVE_HOME}/lib/ \
-    && rm -rf ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib ${PREFIX}/db-derby-${APACHE_DERBY_VERSION}-lib.tar.gz \
-    && mkdir -p /var/lib/hive \
-    && mkdir -p /user/hive/warehouse \
-    && mkdir -p /.beeline \
-    && mkdir -p $HOME/.beeline \
-    && chown -R 1002:0 ${PREFIX} /var/lib/hive /user/hive/warehouse /.beeline $HOME/.beeline \
-    && chmod -R 774 ${PREFIX} /var/lib/hive /user/hive/warehouse /.beeline $HOME/.beeline /etc/passwd \
-    && chmod -R g+rwx $(readlink -f ${JAVA_HOME}) \
-             $(readlink -f ${JAVA_HOME}/lib/security) \
-             $(readlink -f ${JAVA_HOME}/lib/security/cacerts)
+COPY --from=build /build/packaging/target/apache-hive-$HIVE_VERSION-bin/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
+WORKDIR $HIVE_HOME
 
-# Link connectors
-RUN ln -s /usr/share/java/mysql-connector-java.jar ${HIVE_HOME}/lib/mysql-connector-java.jar \
-    && ln -s /usr/share/java/postgresql-jdbc.jar ${HIVE_HOME}/lib/postgresql-jdbc.jar
+ENV HADOOP_CLASSPATH $HIVE_HOME/hcatalog/share/hcatalog/*:${HADOOP_CLASSPATH}
+ENV JAVA_HOME=/etc/alternatives/jre
 
-# update hive guava lib
-RUN for _JARFILE in $(ls ${HIVE_HOME}/lib/guava*.jar); do     mv ${_JARFILE} ${_JARFILE}xNOPE; done \
-    && ln -s ${HADOOP_HOME}/share/hadoop/common/lib/guava*.jar ${HIVE_HOME}/lib
+# Configure Hadoop AWS Jars to be available to hive
+RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* $HIVE_HOME/lib
+# Configure Postgesql connector jar to be available to hive
+RUN ln -s /usr/share/java/postgresql-jdbc.jar "$HIVE_HOME/lib/postgresql-jdbc.jar"
 
-# Java security config
-RUN touch $JAVA_HOME/lib/security/java.security && \
-    sed -i -e '/networkaddress.cache.ttl/d' \
-        -e '/networkaddress.cache.negative.ttl/d' \
-        $JAVA_HOME/lib/security/java.security && \
-    printf 'networkaddress.cache.ttl=0\nnetworkaddress.cache.negative.ttl=0\n' >> $JAVA_HOME/lib/security/java.security
+# https://docs.oracle.com/javase/7/docs/technotes/guides/net/properties.html
+# Java caches dns results forever, don't cache dns results forever:
+RUN sed -i '/networkaddress.cache.ttl/d' $JAVA_HOME/lib/security/java.security
+RUN sed -i '/networkaddress.cache.negative.ttl/d' $JAVA_HOME/lib/security/java.security
+RUN echo 'networkaddress.cache.ttl=0' >> $JAVA_HOME/lib/security/java.security
+RUN echo 'networkaddress.cache.negative.ttl=0' >> $JAVA_HOME/lib/security/java.security
+
+# imagebuilder expects the directory to be created before VOLUME
+RUN mkdir -p /var/lib/hive /.beeline $HOME/.beeline
+# to allow running as non-root
+RUN chown -R 1002:0 $HIVE_HOME $HADOOP_HOME /var/lib/hive /.beeline $HOME/.beeline /etc/passwd $JAVA_HOME/lib/security/cacerts && \
+    chmod -R 774 $HIVE_HOME $HADOOP_HOME /var/lib/hive /.beeline $HOME/.beeline /etc/passwd $JAVA_HOME/lib/security/cacerts
+
+VOLUME /var/lib/hive
 
 USER 1002
-VOLUME /user/hive/warehouse /var/lib/hive
 
 LABEL io.k8s.display-name="OpenShift Hive" \
       io.k8s.description="This is an image used by Cost Management to install and run Hive." \
       summary="This is an image used by Cost Management to install and run Hive." \
       io.openshift.tags="openshift" \
       maintainer="<cost-mgmt@redhat.com>"
+
