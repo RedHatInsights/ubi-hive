@@ -52,26 +52,40 @@ RUN yum -y update && \
 COPY --from=build /build/packaging/target/apache-hive-$HIVE_VERSION-bin/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
 WORKDIR $HIVE_HOME
 
-ENV HADOOP_CLASSPATH $HIVE_HOME/hcatalog/share/hcatalog/*:${HADOOP_CLASSPATH}
+ENV HIVE_CLASSPATH=${HIVE_HOME}/lib:${HIVE_HOME}/hcatalog/share/hcatalog:${HADOOP_HOME}/share/hadoop/common/lib:${HADOOP_HOME}/share/hadoop/tools/lib
+ENV CLASSPATH=${HIVE_CLASSPATH}:${CLASSPATH}
 ENV JAVA_HOME=/etc/alternatives/jre
 
 # Configure Hadoop AWS Jars to be available to hive
-RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* $HIVE_HOME/lib
+RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${HIVE_HOME}/lib
 # Configure Postgesql connector jar to be available to hive
-RUN ln -s /usr/share/java/postgresql-jdbc.jar "$HIVE_HOME/lib/postgresql-jdbc.jar"
+RUN \
+for _JARFILE in $(ls -1 ${HIVE_HOME}/lib/postgresql-9*.jar); \
+do \
+    mv ${_JARFILE} ${_JARFILE}.NOPE ; \
+done; \
+ln -s /usr/share/java/postgresql-jdbc.jar "${HIVE_HOME}/lib/postgresql-jdbc.jar"
+# Download mariadb java client
+RUN curl -sLo /opt/mariadb-java-client-2.7.1.jar \
+         "https://dlm.mariadb.com/1484707/Connectors/java/connector-java-2.7.1/mariadb-java-client-2.7.1.jar" \
+    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HIVE_HOME}/lib/mariadb-java-client-2.7.1.jar \
+    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HIVE_HOME}/lib/mysql-connector-java.jar \
+    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HADOOP_HOME}/share/hadoop/common/lib/mariadb-java-client-2.7.1.jar \
+    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HADOOP_HOME}/share/hadoop/common/lib/mysql-connector-java.jar
 
 # https://docs.oracle.com/javase/7/docs/technotes/guides/net/properties.html
 # Java caches dns results forever, don't cache dns results forever:
-RUN sed -i '/networkaddress.cache.ttl/d' $JAVA_HOME/lib/security/java.security
-RUN sed -i '/networkaddress.cache.negative.ttl/d' $JAVA_HOME/lib/security/java.security
-RUN echo 'networkaddress.cache.ttl=0' >> $JAVA_HOME/lib/security/java.security
-RUN echo 'networkaddress.cache.negative.ttl=0' >> $JAVA_HOME/lib/security/java.security
+RUN touch ${JAVA_HOME}/lib/security/java.security
+RUN sed -i '/networkaddress.cache.ttl/d' ${JAVA_HOME}/lib/security/java.security
+RUN sed -i '/networkaddress.cache.negative.ttl/d' ${JAVA_HOME}/lib/security/java.security
+RUN echo 'networkaddress.cache.ttl=0' >> ${JAVA_HOME}/lib/security/java.security
+RUN echo 'networkaddress.cache.negative.ttl=0' >> ${JAVA_HOME}/lib/security/java.security
 
 # imagebuilder expects the directory to be created before VOLUME
-RUN mkdir -p /var/lib/hive /.beeline $HOME/.beeline
+RUN mkdir -p /var/lib/hive /.beeline ${HOME}/.beeline
 # to allow running as non-root
-RUN chown -R 1002:0 $HIVE_HOME $HADOOP_HOME /var/lib/hive /.beeline $HOME/.beeline /etc/passwd $JAVA_HOME/lib/security/cacerts && \
-    chmod -R 774 $HIVE_HOME $HADOOP_HOME /var/lib/hive /.beeline $HOME/.beeline /etc/passwd $JAVA_HOME/lib/security/cacerts
+RUN chown -R 1002:0 ${HIVE_HOME} ${HADOOP_HOME} /var/lib/hive /.beeline ${HOME}/.beeline /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts) && \
+    chmod -R u+rwx,g+rwx ${HIVE_HOME} ${HADOOP_HOME} /var/lib/hive /.beeline ${HOME}/.beeline /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts)
 
 VOLUME /var/lib/hive
 
