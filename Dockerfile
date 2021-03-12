@@ -59,11 +59,7 @@ ENV JAVA_HOME=/etc/alternatives/jre
 # Configure Hadoop AWS Jars to be available to hive
 RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${HIVE_HOME}/lib
 # Configure Postgesql connector jar to be available to hive
-RUN \
-for _JARFILE in $(ls -1 ${HIVE_HOME}/lib/postgresql-9*.jar); \
-do \
-    mv ${_JARFILE} ${_JARFILE}.NOPE ; \
-done; \
+RUN rm ${HIVE_HOME}/lib/postgresql-9*.jar ; \
 ln -s /usr/share/java/postgresql-jdbc.jar "${HIVE_HOME}/lib/postgresql-jdbc.jar"
 # Download mariadb java client
 RUN curl -sLo /opt/mariadb-java-client-2.7.1.jar \
