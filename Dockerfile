@@ -85,7 +85,11 @@ RUN chown -R 1002:0 ${HIVE_HOME} ${HADOOP_HOME} /var/lib/hive /.beeline ${HOME}/
 
 VOLUME /var/lib/hive
 
-USER 1002
+RUN groupadd -r hive --gid=1002 \
+    && useradd -r -g hive --uid=1002 -d ${HIVE_HOME} hive\
+    && chown hive:hive -R ${HIVE_HOME}
+
+USER hive
 
 LABEL io.k8s.display-name="OpenShift Hive" \
       io.k8s.description="This is an image used by Cost Management to install and run Hive." \
