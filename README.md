@@ -13,7 +13,7 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 5. Create PR merging into `main`
 6. Get reviewed and approved
 
-## Build new version of Presto
+## Build new version of Hive
 
 1. Check available releases [here](https://downloads.apache.org/hive/). If current version is desired version, then stop unless you need a different hadoop image tag.
 2. Checkout `main` and pull

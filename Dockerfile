@@ -25,7 +25,9 @@ RUN git clone -q \
 
 WORKDIR /build
 
-RUN scl enable rh-maven33 'cd /build && mvn -B -e -T 1C -DskipTests=true -DfailIfNoTests=false -Dtest=false clean package -Pdist'
+COPY hive/rel/release-${HIVE_VERSION}/ql/pom.xml /build/ql/pom.xml
+
+RUN scl enable rh-maven33 'cd /build && mvn -B -e -T 1C  -DskipTests=true -DfailIfNoTests=false -Dtest=false -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true clean package -Pdist'
 
 FROM quay.io/cloudservices/ubi-hadoop:3.1.1-001
 
@@ -46,6 +48,7 @@ RUN yum -y update && \
     yum install --setopt=skip_missing_names_on_install=False -y \
         postgresql-jdbc \
         openssl \
+        jq \
     && yum clean all \
     && rm -rf /var/cache/yum
 
