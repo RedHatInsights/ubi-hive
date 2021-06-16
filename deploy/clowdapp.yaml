@@ -66,7 +66,7 @@ objects:
         </property>
         <property>
           <name>hive.metastore.warehouse.dir</name>
-          <value>s3a://XXX_S3ENDPOINT_XXX/</value>
+          <value>XXX_S3ENDPOINT_XXX/</value>
         </property>
               <property>
         <name>hive.metastore.db.type</name>
@@ -265,6 +265,14 @@ objects:
         export AWS_ACCESS_KEY_ID=`jq -r '.objectStore.buckets[0].accessKey' ${ACG_CONFIG}`
         export AWS_SECRET_ACCESS_KEY=`jq -r '.objectStore.buckets[0].secretKey' ${ACG_CONFIG}`
         export S3_BUCKET_NAME=`jq -r '.objectStore.buckets[0].requestedName' ${ACG_CONFIG}`
+        export OBJECTSTORE_HOST=`jq -r '.objectStore.hostname' ${ACG_CONFIG}`
+        export OBJECTSTORE_PORT=`jq -r '.objectStore.port' ${ACG_CONFIG}`
+
+        export URI_PREFIX=http
+        if [[ $OBJECTSTORE_HOST == *"ephemeral"* ]]; then
+          export URI_PREFIX=s3a
+        fi
+        export S3_PREFIX=${URI_PREFIX}://${OBJECTSTORE_HOST}:${OBJECTSTORE_PORT}
 
         export DATABASE_SSLMODE=`jq -r '.database.sslMode' ${ACG_CONFIG}`
         if [[ $DATABASE_SSLMODE = "null" ]]; then
@@ -311,7 +319,7 @@ objects:
 
       # symlink our configuration files to the correct location
       if [ -f /hadoop-config/core-site.xml ]; then
-        cat /hadoop-config/core-site.xml | sed "s#XXX_S3ENDPOINT_XXX#${S3_BUCKET_NAME}/${S3_DATA_DIR}#" > /etc/hadoop/core-site.xml
+        cat /hadoop-config/core-site.xml | sed "s#XXX_S3ENDPOINT_XXX#${S3_PREFIX}/${S3_BUCKET_NAME}/${S3_DATA_DIR}#" > /etc/hadoop/core-site.xml
       else
         echo "core-site.xml doesnt exist, skipping"
       fi
@@ -323,7 +331,7 @@ objects:
 
       # insert S3 bucket URI from env vars
       cat /hive-config/hive-site.xml | sed \
-        -e "s#XXX_S3ENDPOINT_XXX#${S3_BUCKET_NAME}/${S3_DATA_DIR}#" \
+        -e "s#XXX_S3ENDPOINT_XXX#${S3_PREFIX}/${S3_BUCKET_NAME}/${S3_DATA_DIR}#" \
         -e "s#XXX_DATABASE_USER_XXX#${DATABASE_USER}#" \
         -e "s#XXX_DATABASE_PASSWORD_XXX#${DATABASE_PASSWORD}#" \
         -e "s#XXX_DATABASE_CONNECT_URL_XXX#postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=${DATABASE_SSLMODE}#" \
@@ -375,7 +383,7 @@ objects:
 
 
 - apiVersion: v1
-  kind: Secret
+  kind: ConfigMap
   metadata:
     name: hadoop-config
   stringData:
@@ -383,7 +391,7 @@ objects:
       <configuration>
         <property>
             <name>fs.defaultFS</name>
-            <value>s3a://XXX_S3ENDPOINT_XXX/</value>
+            <value>XXX_S3ENDPOINT_XXX/</value>
         </property>
         <property>
             <name>fs.gs.impl</name>
@@ -489,8 +497,8 @@ objects:
         - name: hive-metastore-db-data
           emptyDir: {}
         - name: hadoop-config
-          secret:
-            secretName: hadoop-config
+          configMap:
+            name: hadoop-config
             defaultMode: 420
         volumeMounts:
         - name: hive-config
