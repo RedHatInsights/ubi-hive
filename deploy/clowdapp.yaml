@@ -268,9 +268,9 @@ objects:
         export OBJECTSTORE_HOST=`jq -r '.objectStore.hostname' ${ACG_CONFIG}`
         export OBJECTSTORE_PORT=`jq -r '.objectStore.port' ${ACG_CONFIG}`
 
-        export URI_PREFIX=http
+        export URI_PREFIX=s3a
         if [[ $OBJECTSTORE_HOST == *"ephemeral"* ]]; then
-          export URI_PREFIX=s3a
+          export URI_PREFIX=http
         fi
         export S3_PREFIX=${URI_PREFIX}://${OBJECTSTORE_HOST}:${OBJECTSTORE_PORT}
 
