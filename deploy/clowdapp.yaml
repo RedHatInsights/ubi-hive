@@ -80,6 +80,11 @@ objects:
           <value>XXX_S3_SECRET_XXX</value>
         </property>
         <property>
+          <name>fs.s3a.path.style.access</name>
+          <value>true</value>
+          <description>Enable S3 path style access.</description>
+        </property>
+        <property>
           <name>hive.metastore.warehouse.dir</name>
           <value>s3a://XXX_S3_BUCKET_DIR_XXX/</value>
         </property>
