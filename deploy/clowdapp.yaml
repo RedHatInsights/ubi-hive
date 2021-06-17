@@ -64,6 +64,7 @@ objects:
           <name>hive.default.fileformat</name>
           <value>Parquet</value>
         </property>
+        <property>
           <name>fs.s3a.endpoint</name>
           <description>AWS S3 endpoint to connect to.</description>
           <value>XXX_S3ENDPOINT_XXX</value>
