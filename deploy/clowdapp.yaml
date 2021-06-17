@@ -415,7 +415,7 @@ objects:
       <configuration>
         <property>
             <name>fs.defaultFS</name>
-            <value>XXX_S3ENDPOINT_XXX/</value>
+            <value>s3a://XXX_S3ENDPOINT_XXX/</value>
         </property>
         <property>
             <name>fs.gs.impl</name>
