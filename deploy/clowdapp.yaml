@@ -386,7 +386,7 @@ objects:
   kind: ConfigMap
   metadata:
     name: hadoop-config
-  stringData:
+  data:
     core-site.xml: |
       <configuration>
         <property>
