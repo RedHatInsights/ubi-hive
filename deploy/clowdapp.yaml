@@ -65,16 +65,36 @@ objects:
           <value>Parquet</value>
         </property>
         <property>
-          <name>hive.metastore.warehouse.dir</name>
-          <value>s3a://XXX_S3ENDPOINT_XXX/</value>
+          <name>fs.s3a.endpoint</name>
+          <description>AWS S3 endpoint to connect to.</description>
+          <value>XXX_S3ENDPOINT_XXX</value>
         </property>
-              <property>
-        <name>hive.metastore.db.type</name>
-        <value>POSTGRES</value>
-        <description>
-          Expects one of [derby, oracle, mysql, mssql, postgres].
-          Type of database used by the metastore. Information schema &amp; JDBCStorageHandler depend on it.
-        </description>
+        <property>
+          <name>fs.s3a.access.key</name>
+          <description>AWS access key ID.</description>
+          <value>XXX_S3_ACCESS_KEY_XXX</value>
+        </property>
+        <property>
+          <name>fs.s3a.secret.key</name>
+          <description>AWS secret key.</description>
+          <value>XXX_S3_SECRET_XXX</value>
+        </property>
+        <property>
+          <name>fs.s3a.path.style.access</name>
+          <value>true</value>
+          <description>Enable S3 path style access.</description>
+        </property>
+        <property>
+          <name>hive.metastore.warehouse.dir</name>
+          <value>s3a://XXX_S3_BUCKET_DIR_XXX/</value>
+        </property>
+        <property>
+          <name>hive.metastore.db.type</name>
+          <value>POSTGRES</value>
+          <description>
+            Expects one of [derby, oracle, mysql, mssql, postgres].
+            Type of database used by the metastore. Information schema &amp; JDBCStorageHandler depend on it.
+          </description>
         </property>
         <property>
           <name>javax.jdo.option.ConnectionUserName</name>
@@ -265,6 +285,15 @@ objects:
         export AWS_ACCESS_KEY_ID=`jq -r '.objectStore.buckets[0].accessKey' ${ACG_CONFIG}`
         export AWS_SECRET_ACCESS_KEY=`jq -r '.objectStore.buckets[0].secretKey' ${ACG_CONFIG}`
         export S3_BUCKET_NAME=`jq -r '.objectStore.buckets[0].requestedName' ${ACG_CONFIG}`
+        export OBJECTSTORE_HOST=`jq -r '.objectStore.hostname' ${ACG_CONFIG}`
+        export OBJECTSTORE_PORT=`jq -r '.objectStore.port' ${ACG_CONFIG}`
+        export OBJECTSTORE_TLS=`jq -r '.objectStore.tls' ${ACG_CONFIG}`
+
+        export URI_PREFIX=https
+        if [[ $OBJECTSTORE_TLS == *"false"* ]]; then
+          export URI_PREFIX=http
+        fi
+        export S3_ENDPOINT=${URI_PREFIX}://${OBJECTSTORE_HOST}:${OBJECTSTORE_PORT}
 
         export DATABASE_SSLMODE=`jq -r '.database.sslMode' ${ACG_CONFIG}`
         if [[ $DATABASE_SSLMODE = "null" ]]; then
@@ -323,7 +352,10 @@ objects:
 
       # insert S3 bucket URI from env vars
       cat /hive-config/hive-site.xml | sed \
-        -e "s#XXX_S3ENDPOINT_XXX#${S3_BUCKET_NAME}/${S3_DATA_DIR}#" \
+        -e "s#XXX_S3ENDPOINT_XXX#${S3_ENDPOINT}#" \
+        -e "s#XXX_S3_ACCESS_KEY_XXX#${AWS_ACCESS_KEY_ID}#" \
+        -e "s#XXX_S3_SECRET_XXX#${AWS_SECRET_ACCESS_KEY}#" \
+        -e "s#XXX_S3_BUCKET_DIR_XXX#${S3_BUCKET_NAME}/${S3_DATA_DIR}#" \
         -e "s#XXX_DATABASE_USER_XXX#${DATABASE_USER}#" \
         -e "s#XXX_DATABASE_PASSWORD_XXX#${DATABASE_PASSWORD}#" \
         -e "s#XXX_DATABASE_CONNECT_URL_XXX#postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=${DATABASE_SSLMODE}#" \
@@ -375,10 +407,10 @@ objects:
 
 
 - apiVersion: v1
-  kind: Secret
+  kind: ConfigMap
   metadata:
     name: hadoop-config
-  stringData:
+  data:
     core-site.xml: |
       <configuration>
         <property>
@@ -489,8 +521,8 @@ objects:
         - name: hive-metastore-db-data
           emptyDir: {}
         - name: hadoop-config
-          secret:
-            secretName: hadoop-config
+          configMap:
+            name: hadoop-config
             defaultMode: 420
         volumeMounts:
         - name: hive-config
