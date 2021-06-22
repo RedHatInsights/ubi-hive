@@ -313,8 +313,8 @@ objects:
         fi
 
         S3_ENDPOINT="${URI_PREFIX}://${OBJECTSTORE_HOST}"
-        if [[ -n PORT != "" ]]; then
-          S3_ENDPOINT= "${S3_ENDPOINT}:${OBJECTSTORE_PORT}"
+        if [[ -n "${OBJECTSTORE_PORT}" ]] && [[ "${OBJECTSTORE_PORT}" != "null" ]]; then
+          S3_ENDPOINT="${S3_ENDPOINT}:${OBJECTSTORE_PORT}"
         fi
         export S3_ENDPOINT
       fi
