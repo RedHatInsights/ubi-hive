@@ -306,10 +306,9 @@ objects:
         OBJECTSTORE_PORT=$(jq -r '.objectStore.port' ${ACG_CONFIG})
         OBJECTSTORE_TLS=$(jq -r '.objectStore.tls' ${ACG_CONFIG})
 
-        if [[ -n OBJECTSTORE_TLS ]]; then
-          URI_PREFIX=https
-        else
-          URI_PREFIX=HTTP
+        export URI_PREFIX=https
+        if [[ $OBJECTSTORE_TLS == *"false"* ]]; then
+          export URI_PREFIX=http
         fi
 
         S3_ENDPOINT="${URI_PREFIX}://${OBJECTSTORE_HOST}"
