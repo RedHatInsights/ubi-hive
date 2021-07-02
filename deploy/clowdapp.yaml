@@ -567,8 +567,9 @@ objects:
     objectStore:
     - ${S3_BUCKET_NAME}
     database:
-      name: ${DATABASE_NAME}
-      version: ${{DATABASE_VERSION}}
+      sharedDbAppName: koku
+    dependencies:
+      - koku
 
 parameters:
 - description: ClowdEnv Name
@@ -616,7 +617,3 @@ parameters:
   required: true
 - name: S3_BUCKET_NAME
   value: 'hive-s3'
-- name: DATABASE_NAME
-  value: 'koku'
-- name: DATABASE_VERSION
-  value: '12'
