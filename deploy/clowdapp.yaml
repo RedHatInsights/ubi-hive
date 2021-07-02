@@ -617,6 +617,6 @@ parameters:
 - name: S3_BUCKET_NAME
   value: 'hive-s3'
 - name: DATABASE_NAME
-  value: 'koku-db'
+  value: 'koku'
 - name: DATABASE_VERSION
   value: '12'
