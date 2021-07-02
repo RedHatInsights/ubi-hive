@@ -628,8 +628,8 @@ parameters:
   value: 'hive-s3'
 
 - name: HIVE_DB_NAME_EPH
-  value: hive
+  value: aGl2ZQ== # hive
 - name: HIVE_DB_USER_EPH
-  value: hive
+  value: aGl2ZQ== # hive
 - name: HIVE_DB_PASSWORD_EPH
-  value: hive
+  value: aGl2ZQ== # hive
