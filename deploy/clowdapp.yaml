@@ -280,9 +280,9 @@ objects:
       if [[ ! -z "${ACG_CONFIG}" ]]; then
         export DATABASE_HOST=$(jq -r '.database.hostname' ${ACG_CONFIG})
         export DATABASE_PORT=$(jq -r '.database.port' ${ACG_CONFIG})
-        export DATABASE_USER=$(jq -r '.database.username' ${ACG_CONFIG})
-        export DATABASE_PASSWORD=$(jq -r '.database.password' ${ACG_CONFIG})
-        export DATABASE_NAME=$(jq -r '.database.name' ${ACG_CONFIG})
+        # export DATABASE_USER=$(jq -r '.database.username' ${ACG_CONFIG})
+        # export DATABASE_PASSWORD=$(jq -r '.database.password' ${ACG_CONFIG})
+        # export DATABASE_NAME=$(jq -r '.database.name' ${ACG_CONFIG})
 
         export DATABASE_SSLMODE=$(jq -r '.database.sslMode' ${ACG_CONFIG})
         if [[ $DATABASE_SSLMODE = "null" ]]; then
@@ -492,6 +492,21 @@ objects:
           value: 'data'
         - name: DATABASE_SSLMODE
           value: ${DATABASE_SSLMODE}
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: hive-db
+              key: database_user
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hive-db
+              key: database_password
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: hive-db
+              key: database_name
         - name: MY_MEM_REQUEST
           valueFrom:
             resourceFieldRef:
@@ -602,6 +617,6 @@ parameters:
 - name: S3_BUCKET_NAME
   value: 'hive-s3'
 - name: DATABASE_NAME
-  value: hive
+  value: 'koku'
 - name: DATABASE_VERSION
   value: '12'
