@@ -8,7 +8,7 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: hive-config
+    name: hive-clowder-config
   data:
     hive-site.xml: |
       <configuration>
@@ -217,7 +217,7 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: hive-jmx-config
+    name: hive-clowder-jmx-config
     labels:
       app: hive
   data:
@@ -252,7 +252,7 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: hive-scripts
+    name: hive-clowder-scripts
   data:
     entrypoint.sh: |
       #!/bin/bash
@@ -417,7 +417,7 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: hadoop-config
+    name: hadoop-clowder-config
   data:
     core-site.xml: |
       <configuration>
@@ -527,14 +527,14 @@ objects:
         volumes:
         - name: hive-config
           configMap:
-            name: hive-config
+            name: hive-clowder-config
         - name: hive-scripts
           configMap:
-            name: hive-scripts
+            name: hive-clowder-scripts
             defaultMode: 0775
         - name: hive-jmx-config
           configMap:
-            name: hive-jmx-config
+            name: hive-clowder-jmx-config
         - name: namenode-empty
           emptyDir: {}
         - name: datanode-empty
@@ -545,7 +545,7 @@ objects:
           emptyDir: {}
         - name: hadoop-config
           configMap:
-            name: hadoop-config
+            name: hadoop-clowder-config
             defaultMode: 420
         volumeMounts:
         - name: hive-config
@@ -570,6 +570,15 @@ objects:
       sharedDbAppName: koku
     dependencies:
       - koku
+
+- apiVersion: v1
+  kind: Secret # For ephemeral/local environment only
+  metadata:
+    name: hive-db
+  data:
+    database_name: "${HIVE_DB_NAME_EPH}"
+    database_user: "${HIVE_DB_USER_EPH}"
+    database_password: "${HIVE_DB_PASSWORD_EPH}"
 
 parameters:
 - description: ClowdEnv Name
@@ -617,3 +626,10 @@ parameters:
   required: true
 - name: S3_BUCKET_NAME
   value: 'hive-s3'
+
+- name: HIVE_DB_NAME_EPH
+  value: aGl2ZQ== # hive
+- name: HIVE_DB_USER_EPH
+  value: aGl2ZQ== # hive
+- name: HIVE_DB_PASSWORD_EPH
+  value: aGl2ZQ== # hive
