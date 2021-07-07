@@ -37,3 +37,13 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 * `pr_check.sh` : PR check script (You should not need to modify this)
 * `build_deploy.sh` : Build and deploy to Red Hat cloudservices quay org. (You should not need to modify this script)
 
+# Usage
+
+It supports [arbitrary user ids](https://docs.openshift.com/container-platform/4.7/openshift_images/create-images.html#use-uid_create-images)
+by using the packaged `/entrypoint.sh` as container command to add UID and
+username. You can use arguments like `/opt/hive/bin/hive --service metastore` to
+start a Hive metastore. If you want to customize this feature, define a
+different command instead.
+
+**Notice**: the default username is `hadoop`, customize it by providing an
+environment variable named `USER_NAME`.

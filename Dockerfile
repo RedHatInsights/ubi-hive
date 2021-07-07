@@ -90,9 +90,11 @@ VOLUME /var/lib/hive
 
 USER 1002
 
+COPY entrypoint.sh /
+ENTRYPOINT /entrypoint.sh
+
 LABEL io.k8s.display-name="OpenShift Hive" \
       io.k8s.description="This is an image used by Cost Management to install and run Hive." \
       summary="This is an image used by Cost Management to install and run Hive." \
       io.openshift.tags="openshift" \
       maintainer="<cost-mgmt@redhat.com>"
-
