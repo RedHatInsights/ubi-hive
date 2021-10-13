@@ -590,27 +590,22 @@ parameters:
   displayName: Memory Request
   name: MEMORY_REQUEST
   required: true
-  value: 512Mi
+  value: 300Mi
 - description: Maximum amount of memory the container can use.
   displayName: Memory Limit
   name: MEMORY_LIMIT
   required: true
-  value: 2Gi
+  value: 600Mi
 - description: Initial amount of CPU the container will request.
   displayName: CPU Request
   name: CPU_REQUEST
   required: true
-  value: 500m
+  value: 250m
 - description: Maximum amount of CPU the container can use.
   displayName: CPU Limit
   name: CPU_LIMIT
   required: true
-  value: '1'
-- description: Number of replicas
-  displayName: replica count
-  name: REPLICAS
-  required: true
-  value: '3'
+  value: 500m
 - description: Whether to connect to the database using SSL/TLS; valid values are "true" or "false"
   displayName: Database uses SSL/TLS
   name: DATABASE_SSLMODE
