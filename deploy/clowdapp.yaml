@@ -157,6 +157,9 @@ objects:
   data:
     entrypoint.sh: |
       #!/bin/bash
+
+      export PATH=${METASTORE_HOME}/bin:$PATH
+
       function importCert() {
         PEM_FILE=$1
         PASSWORD=$2
