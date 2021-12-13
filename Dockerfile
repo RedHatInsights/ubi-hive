@@ -1,98 +1,64 @@
-FROM quay.io/centos/centos:centos7 as build
 
-ARG HIVE_VERSION=2.3.3
-ENV HIVE_RELEASE_TAG=rel/release-${HIVE_VERSION}
-ENV HIVE_RELEASE_TAG_RE=".*refs/tags/${HIVE_RELEASE_TAG}\$"
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+LABEL io.k8s.display-name="OpenShift Hive Metastore" \
+    io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
+    summary="This is an image used by Cost Management to install and run Hive Metastore." \
+    io.openshift.tags="openshift" \
+    maintainer="<cost-mgmt@redhat.com>"
 
 RUN yum -y update && yum clean all
 
-RUN yum -y install --setopt=skip_missing_names_on_install=False centos-release-scl
+RUN \
+    # symlink the python3.6 installed in the container
+    ln -s /usr/libexec/platform-python /usr/bin/python && \
+    # add PostgreSQL RPM repository
+    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    set -xeu && \
+    INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
+    yum install -y $INSTALL_PKGS && \
+    yum clean all && \
+    rm -rf /var/cache/yum
 
-RUN yum -y install \
-        java-1.8.0-openjdk \
-        java-1.8.0-openjdk-devel \
-        rh-maven33 \
-        git \
-    && yum clean all \
-    && rm -rf /var/cache/yum
-
-# Originally, this was a *lot* of COPY layers
-RUN git clone -q \
-        -b $(git ls-remote --tags https://github.com/apache/hive | grep -E "${HIVE_RELEASE_TAG_RE}" | sed -E 's/.*refs.tags.(rel.*)/\1/g') \
-        --single-branch \
-        https://github.com/apache/hive.git \
-        /build
-
-WORKDIR /build
-
-COPY hive/rel/release-${HIVE_VERSION}/ql/pom.xml /build/ql/pom.xml
-
-RUN scl enable rh-maven33 'cd /build && mvn -B -e -T 1C  -DskipTests=true -DfailIfNoTests=false -Dtest=false -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true clean package -Pdist'
-
-FROM quay.io/cloudservices/ubi-hadoop:3.1.1-002
-
-# Keep this in sync with ARG HIVE_VERSION above
-ENV HIVE_VERSION=2.3.3
-ENV HIVE_HOME=/opt/hive
-ENV PATH=$HIVE_HOME/bin:$PATH
-
-RUN mkdir -p /opt
 WORKDIR /opt
 
-USER root
+ENV HADOOP_VERSION=3.3.1
+ENV METASTORE_VERSION=3.1.2
 
-# PostgreSQL Repo
-RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
+ENV METASTORE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
 
-RUN yum -y update && \
-    yum install --setopt=skip_missing_names_on_install=False -y \
-        postgresql-jdbc \
-        openssl \
-        jq \
-    && yum clean all \
-    && rm -rf /var/cache/yum
+RUN curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
+    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf -
 
-COPY --from=build /build/packaging/target/apache-hive-$HIVE_VERSION-bin/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
-WORKDIR $HIVE_HOME
+RUN \
+    # Configure Hadoop AWS Jars to be available to hive
+    ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${METASTORE_HOME}/lib && \
+    # Configure Postgesql connector jar to be available to hive
+    ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
 
-ENV HIVE_CLASSPATH=${HIVE_HOME}/lib:${HIVE_HOME}/hcatalog/share/hcatalog:${HADOOP_HOME}/share/hadoop/common/lib:${HADOOP_HOME}/share/hadoop/tools/lib
-ENV CLASSPATH=${HIVE_CLASSPATH}:${CLASSPATH}
-ENV JAVA_HOME=/etc/alternatives/jre
+####### CVE-2021-44228 #######
+ARG LOG4J_VERSION=2.15.0
+ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
+RUN \
+    rm -f /opt/hadoop-${HADOOP_VERSION}/share/hadoop/common/lib/slf4j-log4j12* && \
+    rm -f /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-* && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-1.2-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.15.0/log4j-1.2-api-2.15.0.jar  && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-core-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.15.0/log4j-core-2.15.0.jar && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar
+##############################
 
-# Configure Hadoop AWS Jars to be available to hive
-RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${HIVE_HOME}/lib
-# Configure Postgesql connector jar to be available to hive
-RUN rm ${HIVE_HOME}/lib/postgresql-9*.jar ; \
-ln -s /usr/share/java/postgresql-jdbc.jar "${HIVE_HOME}/lib/postgresql-jdbc.jar"
-# Download mariadb java client
-RUN curl -sLo /opt/mariadb-java-client-2.7.1.jar \
-         "https://dlm.mariadb.com/1484707/Connectors/java/connector-java-2.7.1/mariadb-java-client-2.7.1.jar" \
-    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HIVE_HOME}/lib/mariadb-java-client-2.7.1.jar \
-    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HIVE_HOME}/lib/mysql-connector-java.jar \
-    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HADOOP_HOME}/share/hadoop/common/lib/mariadb-java-client-2.7.1.jar \
-    && ln -s /opt/mariadb-java-client-2.7.1.jar ${HADOOP_HOME}/share/hadoop/common/lib/mysql-connector-java.jar
+COPY default/conf/metastore-site.xml ${METASTORE_HOME}/conf
+COPY default/conf/metastore-log4j2.properties ${METASTORE_HOME}/conf
+COPY default/scripts/entrypoint.sh /entrypoint.sh
 
-# https://docs.oracle.com/javase/7/docs/technotes/guides/net/properties.html
-# Java caches dns results forever, don't cache dns results forever:
-RUN touch ${JAVA_HOME}/lib/security/java.security
-RUN sed -i '/networkaddress.cache.ttl/d' ${JAVA_HOME}/lib/security/java.security
-RUN sed -i '/networkaddress.cache.negative.ttl/d' ${JAVA_HOME}/lib/security/java.security
-RUN echo 'networkaddress.cache.ttl=0' >> ${JAVA_HOME}/lib/security/java.security
-RUN echo 'networkaddress.cache.negative.ttl=0' >> ${JAVA_HOME}/lib/security/java.security
+RUN groupadd -r metastore --gid=1000 && \
+    useradd -r -g metastore --uid=1000 -d ${METASTORE_HOME} metastore && \
+    chown metastore:metastore -R ${METASTORE_HOME} && \
+    chown metastore:metastore /entrypoint.sh && chmod +x /entrypoint.sh
 
-# imagebuilder expects the directory to be created before VOLUME
-RUN mkdir -p /var/lib/hive /.beeline ${HOME}/.beeline
-# to allow running as non-root
-RUN chown -R 1002:0 ${HIVE_HOME} ${HADOOP_HOME} /var/lib/hive /.beeline ${HOME}/.beeline /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts) && \
-    chmod -R u+rwx,g+rwx ${HIVE_HOME} ${HADOOP_HOME} /var/lib/hive /.beeline ${HOME}/.beeline /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts)
+USER metastore
+EXPOSE 8000
 
-VOLUME /var/lib/hive
-
-USER 1002
-
-LABEL io.k8s.display-name="OpenShift Hive" \
-      io.k8s.description="This is an image used by Cost Management to install and run Hive." \
-      summary="This is an image used by Cost Management to install and run Hive." \
-      io.openshift.tags="openshift" \
-      maintainer="<cost-mgmt@redhat.com>"
-
+ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
