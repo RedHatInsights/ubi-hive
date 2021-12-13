@@ -1,0 +1,64 @@
+
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+LABEL io.k8s.display-name="OpenShift Hive Metastore" \
+    io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
+    summary="This is an image used by Cost Management to install and run Hive Metastore." \
+    io.openshift.tags="openshift" \
+    maintainer="<cost-mgmt@redhat.com>"
+
+RUN yum -y update && yum clean all
+
+RUN \
+    # symlink the python3.6 installed in the container
+    ln -s /usr/libexec/platform-python /usr/bin/python && \
+    # add PostgreSQL RPM repository
+    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    set -xeu && \
+    INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
+    yum install -y $INSTALL_PKGS && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+WORKDIR /opt
+
+ENV HADOOP_VERSION=3.3.1
+ENV METASTORE_VERSION=3.1.2
+
+ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
+ENV METASTORE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
+
+RUN curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
+    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf -
+
+RUN \
+    # Configure Hadoop AWS Jars to be available to hive
+    ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${METASTORE_HOME}/lib && \
+    # Configure Postgesql connector jar to be available to hive
+    ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
+
+####### CVE-2021-44228 #######
+ARG LOG4J_VERSION=2.15.0
+ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
+RUN \
+    rm -f /opt/hadoop-${HADOOP_VERSION}/share/hadoop/common/lib/slf4j-log4j12* && \
+    rm -f /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-* && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-1.2-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.15.0/log4j-1.2-api-2.15.0.jar  && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-core-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.15.0/log4j-core-2.15.0.jar && \
+    curl -o /opt/apache-hive-metastore-${METASTORE_VERSION}-bin/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar
+##############################
+
+COPY conf/metastore-site.xml ${METASTORE_HOME}/conf
+COPY conf/metastore-log4j2.properties ${METASTORE_HOME}/conf
+COPY scripts/entrypoint.sh /entrypoint.sh
+
+RUN groupadd -r metastore --gid=1000 && \
+    useradd -r -g metastore --uid=1000 -d ${METASTORE_HOME} metastore && \
+    chown metastore:metastore -R ${METASTORE_HOME} && \
+    chown metastore:metastore /entrypoint.sh && chmod +x /entrypoint.sh
+
+USER metastore
+EXPOSE 8000
+
+ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
