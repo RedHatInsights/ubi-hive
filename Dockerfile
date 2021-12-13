@@ -58,6 +58,20 @@ RUN groupadd -r metastore --gid=1000 && \
     chown metastore:metastore -R ${METASTORE_HOME} && \
     chown metastore:metastore /entrypoint.sh && chmod +x /entrypoint.sh
 
+# https://docs.oracle.com/javase/7/docs/technotes/guides/net/properties.html
+# Java caches dns results forever, don't cache dns results forever:
+RUN touch $JAVA_HOME/lib/security/java.security && \
+    chown 1000:0 $JAVA_HOME/lib/security/java.security && \
+    chmod g+rw $JAVA_HOME/lib/security/java.security && \
+    sed -i '/networkaddress.cache.ttl/d' $JAVA_HOME/lib/security/java.security && \
+    sed -i '/networkaddress.cache.negative.ttl/d' $JAVA_HOME/lib/security/java.security && \
+    echo 'networkaddress.cache.ttl=0' >> $JAVA_HOME/lib/security/java.security && \
+    echo 'networkaddress.cache.negative.ttl=0' >> $JAVA_HOME/lib/security/java.security
+
+RUN chown -R 1000:0 ${HOME} /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts) && \
+    chmod -R 774 /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts) && \
+    chmod -R 775 ${HOME}
+
 USER metastore
 EXPOSE 8000
 
