@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:centos7 as build
 
-ARG HIVE_VERSION=2.3.3
+ARG HIVE_VERSION=3.1.2
 ENV HIVE_RELEASE_TAG=rel/release-${HIVE_VERSION}
 ENV HIVE_RELEASE_TAG_RE=".*refs/tags/${HIVE_RELEASE_TAG}\$"
 
@@ -25,14 +25,12 @@ RUN git clone -q \
 
 WORKDIR /build
 
-COPY hive/rel/release-${HIVE_VERSION}/ql/pom.xml /build/ql/pom.xml
-
 RUN scl enable rh-maven33 'cd /build && mvn -B -e -T 1C  -DskipTests=true -DfailIfNoTests=false -Dtest=false -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true clean package -Pdist'
 
 FROM quay.io/cloudservices/ubi-hadoop:3.1.1-002
 
 # Keep this in sync with ARG HIVE_VERSION above
-ENV HIVE_VERSION=2.3.3
+ENV HIVE_VERSION=3.1.2
 ENV HIVE_HOME=/opt/hive
 ENV PATH=$HIVE_HOME/bin:$PATH
 
