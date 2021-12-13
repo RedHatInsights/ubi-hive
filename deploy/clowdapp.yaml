@@ -412,6 +412,8 @@ objects:
             cpu: ${CPU_LIMIT}
             memory: ${MEMORY_LIMIT}
         volumes:
+        - name: metastore-conf
+          emptyDir: {}
         - name: metastore-config
           configMap:
             name: metastore-clowder-config
@@ -432,6 +434,8 @@ objects:
             name: hadoop-clowder-config
             defaultMode: 420
         volumeMounts:
+        - name: metastore-conf
+          mountPath: /opt/hive-metastore-bin/conf
         - name: metastore-config
           mountPath: /metastore-config
         - name: metastore-scripts
