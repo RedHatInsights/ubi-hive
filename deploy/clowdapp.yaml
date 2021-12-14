@@ -33,6 +33,11 @@ objects:
           <description>A comma separated list of metrics reporters to start</description>
         </property>
         <property>
+          <name>datanucleus.autoStartMechanismMode</name>
+          <value>ignored</value>
+          <description>Autostart mechanism for datanucleus.  Currently ignored is the only option supported.</description>
+        </property>
+        <property>
           <name>datanucleus.schema.autoCreateAll</name>
           <value>false</value>
           <description>Auto creates necessary schema on a startup if one doesn't exist. Set this to false, after creating it once.To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not recommended for production use cases, run schematool command instead.</description>
