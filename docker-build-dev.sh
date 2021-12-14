@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 IMAGE_TAG=$(${SCRIPT_DIR}/get_image_tag.sh)
 
-echo "Executing local hive docker image build..."
+echo "Executing local hive-metastore docker image build..."
 docker build --target build \
        -t quay.io/cloudservices/ubi-hive:latest \
        -t quay.io/cloudservices/ubi-hive:${IMAGE_TAG} \
