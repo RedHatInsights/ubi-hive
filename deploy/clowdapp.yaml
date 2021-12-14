@@ -165,7 +165,7 @@ objects:
       rootLogger.appenderRefs = root
       rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}
 
-    jmx-config.yml: |
+    jmx-config.yaml: |
       ---
       lowercaseOutputName: true
       lowercaseOutputLabelNames: true
