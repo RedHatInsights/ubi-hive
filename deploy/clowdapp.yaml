@@ -297,7 +297,11 @@ objects:
 
       export HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
       export HADOOP_CLASSPATH=${HADOOP_HOME}/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.375.jar:${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-aws-${HADOOP_VERSION}.jar
-      export HIVE_METASTORE_HADOOP_OPTS="${VM_OPTIONS} ${GC_SETTINGS} ${JMX_OPTIONS} ${METASTORE_OPTS} --hiveconf metastore.root.logger=${HIVE_LOGLEVEL},console "
+      export HIVE_LOGLEVEL="${HIVE_LOGLEVEL:-INFO}"
+      export HADOOP_OPTS="${HADOOP_OPTS} ${VM_OPTIONS} ${GC_SETTINGS} ${JMX_OPTIONS}"
+      export HIVE_METASTORE_HADOOP_OPTS=" -Dhive.log.level=${HIVE_LOGLEVEL} "
+      export HIVE_OPTS="${HIVE_OPTS} --hiveconf metastore.root.logger=${HIVE_LOGLEVEL},console "
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.formatMsgNoLookups=true"
 
       set +e
       if schematool -dbType postgres -info -verbose; then
