@@ -26,14 +26,14 @@ ENV HADOOP_VERSION=3.3.1
 ENV METASTORE_VERSION=3.1.2
 ENV PROMETHEUS_VERSION=0.16.1
 
-ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
+ENV HADOOP_HOME=/opt/hadoop
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
 ENV METASTORE_HOME=/opt/hive-metastore-bin
 
 RUN mkdir -p ${METASTORE_HOME}
 RUN \
     curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1 && \
-    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf -
+    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1
 
 RUN \
     # Configure Hadoop AWS Jars to be available to hive
@@ -45,7 +45,7 @@ RUN \
 ARG LOG4J_VERSION=2.15.0
 ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
 RUN \
-    rm -f /opt/hadoop-${HADOOP_VERSION}/share/hadoop/common/lib/slf4j-log4j12* && \
+    rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
     rm -f ${METASTORE_HOME}/lib/log4j-* && \
     curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.15.0/log4j-1.2-api-2.15.0.jar  && \
     curl -o ${METASTORE_HOME}/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \

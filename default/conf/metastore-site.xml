@@ -10,6 +10,21 @@
     <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
 </property>
 <property>
+    <name>metastore.metrics.enabled</name>
+    <value>true</value>
+    <description>Enable metrics on the metastore.</description>
+</property>
+<property>
+    <name>metastore.metrics.reporters</name>
+    <value>jmx</value>
+    <description>A comma separated list of metrics reporters to start</description>
+</property>
+<property>
+    <name>datanucleus.autoStartMechanismMode</name>
+    <value>ignored</value>
+    <description>Autostart mechanism for datanucleus.  Currently ignored is the only option supported.</description>
+</property>
+<property>
     <name>datanucleus.schema.autoCreateAll</name>
     <value>false</value>
     <description>Auto creates necessary schema on a startup if one doesn't exist. Set this to false, after creating it once.To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not recommended for production use cases, run schematool command instead.</description>
@@ -18,11 +33,11 @@
     <name>metastore.schema.verification</name>
     <value>true</value>
     <description>
-      Enforce metastore schema version consistency.
-      True: Verify that version information stored in is compatible with one from Hive jars.  Also disable automatic
+    Enforce metastore schema version consistency.
+    True: Verify that version information stored in is compatible with one from Hive jars.  Also disable automatic
             schema migration attempt. Users are required to manually migrate schema after Hive upgrade which ensures
             proper metastore schema migration. (Default)
-      False: Warn if the version information stored in metastore doesn't match with one from in Hive jars.
+    False: Warn if the version information stored in metastore doesn't match with one from in Hive jars.
     </description>
 </property>
 <property>
@@ -32,17 +47,17 @@
 <property>
     <name>fs.s3a.endpoint</name>
     <description>AWS S3 endpoint to connect to.</description>
-    <value>http://kokuminio:9000</value>
+    <value>XXX_S3ENDPOINT_XXX</value>
 </property>
 <property>
     <name>fs.s3a.access.key</name>
     <description>AWS access key ID.</description>
-    <value>kokuminioaccess</value>
+    <value>XXX_S3_ACCESS_KEY_XXX</value>
 </property>
 <property>
     <name>fs.s3a.secret.key</name>
     <description>AWS secret key.</description>
-    <value>kokuminiosecret</value>
+    <value>XXX_S3_SECRET_XXX</value>
 </property>
 <property>
     <name>fs.s3a.path.style.access</name>
@@ -51,7 +66,7 @@
 </property>
 <property>
     <name>metastore.warehouse.dir</name>
-    <value>s3a://koku-bucket/</value>
+    <value>s3a://XXX_S3_BUCKET_DIR_XXX/</value>
 </property>
 <property>
     <name>hive.metastore.db.type</name>
@@ -63,17 +78,17 @@
 </property>
 <property>
     <name>javax.jdo.option.ConnectionUserName</name>
-    <value>postgres</value>
+    <value>XXX_DATABASE_USER_XXX</value>
     <description>Username to use against metastore database</description>
 </property>
 <property>
     <name>javax.jdo.option.ConnectionPassword</name>
-    <value>postgres</value>
+    <value>XXX_DATABASE_PASSWORD_XXX</value>
     <description>password to use against metastore database</description>
 </property>
 <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:postgresql://db:5432/hive?sslmode=disable</value>
+    <value>jdbc:XXX_DATABASE_CONNECT_URL_XXX</value>
     <description>
     JDBC connect string for a JDBC metastore.
     To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.

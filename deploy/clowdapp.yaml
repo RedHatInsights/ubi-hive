@@ -165,6 +165,34 @@ objects:
       rootLogger.appenderRefs = root
       rootLogger.appenderRef.root.ref = ${sys:metastore.root.logger}
 
+    jmx-config.yml: |
+      ---
+      lowercaseOutputName: true
+      lowercaseOutputLabelNames: true
+      attrNameSnakeCase: true
+      whitelistObjectNames:
+        - 'metrics:name=active_calls_*'
+        - 'metrics:name=api_*'
+        - 'metrics:name=create_*'
+        - 'metrics:name=delete_*'
+        - 'metrics:name=init_*'
+        - 'metrics:name=exec_*'
+        - 'metrics:name=hs2_*'
+        - 'metrics:name=open_connections'
+        - 'metrics:name=open_operations'
+      rules:
+        - pattern: 'metrics<name=(.*)><>Value'
+          name: hive_$1
+          type: GAUGE
+        - pattern: 'metrics<name=(.*)><>Count'
+          name: hive_$1_count
+          type: GAUGE
+        - pattern: 'metrics<name=(.*)><>(\d+)thPercentile'
+          name: hive_$1
+          type: GAUGE
+          labels:
+            quantile: "0.$2"
+
 - apiVersion: v1
   kind: ConfigMap
   metadata:
@@ -280,7 +308,7 @@ objects:
       ln -s -f /metastore-config/metastore-log4j2.properties $METASTORE_HOME/conf/metastore-log4j2.properties
 
       # Set garbage collection settings
-      export GC_SETTINGS="-XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${HADOOP_LOG_DIR}/heap_dump.bin -XX:+ExitOnOutOfMemoryError -XX:ErrorFile=${HADOOP_LOG_DIR}/java_error%p.log"
+      export GC_SETTINGS="-XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${HADOOP_HOME}/logs/heap_dump.bin -XX:+ExitOnOutOfMemoryError -XX:ErrorFile=${HADOOP_HOME}/logs/java_error%p.log"
       export VM_OPTIONS="$VM_OPTIONS -XX:+UseContainerSupport"
 
       if [ -n "$JVM_INITIAL_RAM_PERCENTAGE" ]; then
@@ -294,13 +322,12 @@ objects:
       fi
 
       # Set JMX options
-      export JMX_OPTIONS="-javaagent:${METASTORE_HOME}/lib/jmx_exporter.jar=9000:/opt/jmx_exporter/config/config.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Djava.rmi.server.hostname=127.0.0.1"
+      export JMX_OPTIONS="-javaagent:${METASTORE_HOME}/lib/jmx_exporter.jar=9000:${METASTORE_HOME}/conf/jmx-config.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Djava.rmi.server.hostname=127.0.0.1"
 
       # Set garbage collection logs
-      export GC_SETTINGS="${GC_SETTINGS} -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc.log"
+      export GC_SETTINGS="${GC_SETTINGS} -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_HOME}/logs/gc.log"
       export GC_SETTINGS="${GC_SETTINGS} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M"
 
-      export HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
       export HADOOP_CLASSPATH=${HADOOP_HOME}/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.375.jar:${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-aws-${HADOOP_VERSION}.jar
       export HIVE_LOGLEVEL="${HIVE_LOGLEVEL:-INFO}"
       export HADOOP_OPTS="${HADOOP_OPTS} ${VM_OPTIONS} ${GC_SETTINGS} ${JMX_OPTIONS}"
@@ -321,41 +348,6 @@ objects:
       set -e
 
       start-metastore
-
-- apiVersion: v1
-  kind: ConfigMap
-  metadata:
-    name: metastore-jmx-config
-    labels:
-      app: hive
-  data:
-    config.yml: |
-      ---
-      lowercaseOutputName: true
-      lowercaseOutputLabelNames: true
-      attrNameSnakeCase: true
-      whitelistObjectNames:
-        - 'metrics:name=active_calls_*'
-        - 'metrics:name=api_*'
-        - 'metrics:name=create_*'
-        - 'metrics:name=delete_*'
-        - 'metrics:name=init_*'
-        - 'metrics:name=exec_*'
-        - 'metrics:name=hs2_*'
-        - 'metrics:name=open_connections'
-        - 'metrics:name=open_operations'
-      rules:
-        - pattern: 'metrics<name=(.*)><>Value'
-          name: hive_$1
-          type: GAUGE
-        - pattern: 'metrics<name=(.*)><>Count'
-          name: hive_$1_count
-          type: GAUGE
-        - pattern: 'metrics<name=(.*)><>(\d+)thPercentile'
-          name: hive_$1
-          type: GAUGE
-          labels:
-            quantile: "0.$2"
 
 - apiVersion: v1
   kind: ConfigMap
@@ -478,36 +470,31 @@ objects:
           configMap:
             name: metastore-clowder-scripts
             defaultMode: 0775
-        - name: metastore-jmx-config
-          configMap:
-            name: metastore-jmx-config
-        - name: namenode-empty
-          emptyDir: {}
-        - name: datanode-empty
-          emptyDir: {}
+        # - name: namenode-empty
+        #   emptyDir: {}
+        # - name: datanode-empty
+        #   emptyDir: {}
         - name: hadoop-logs
           emptyDir: {}
-        - name: hive-metastore-db-data
-          emptyDir: {}
+        # - name: hive-metastore-db-data
+        #   emptyDir: {}
         - name: hadoop-config
           configMap:
             name: hadoop-clowder-config
             defaultMode: 420
         volumeMounts:
-        - name: metastore-jmx-config
-          mountPath: /opt/jmx_exporter/config
         - name: metastore-conf
           mountPath: /opt/hive-metastore-bin/conf
         - name: metastore-config
           mountPath: /metastore-config
         - name: metastore-scripts
           mountPath: /metastore-scripts
-        - name: hive-metastore-db-data
-          mountPath: /var/lib/hive
-        - name: namenode-empty
-          mountPath: /hadoop/dfs/name
-        - name: datanode-empty
-          mountPath: /hadoop/dfs/data
+        # - name: hive-metastore-db-data
+        #   mountPath: /var/lib/hive
+        # - name: namenode-empty
+        #   mountPath: /hadoop/dfs/name
+        # - name: datanode-empty
+        #   mountPath: /hadoop/dfs/data
         - name: hadoop-logs
           mountPath: /opt/hadoop/logs
         - name: hadoop-config
