@@ -302,7 +302,7 @@ objects:
       fi
       set -e
 
-      exec $@
+      start-metastore
 
 
 - apiVersion: v1
