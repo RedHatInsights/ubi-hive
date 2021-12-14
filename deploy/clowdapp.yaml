@@ -471,14 +471,8 @@ objects:
           configMap:
             name: metastore-clowder-scripts
             defaultMode: 0775
-        # - name: namenode-empty
-        #   emptyDir: {}
-        # - name: datanode-empty
-        #   emptyDir: {}
         - name: hadoop-logs
           emptyDir: {}
-        # - name: hive-metastore-db-data
-        #   emptyDir: {}
         - name: hadoop-config
           configMap:
             name: hadoop-clowder-config
@@ -490,12 +484,6 @@ objects:
           mountPath: /metastore-config
         - name: metastore-scripts
           mountPath: /metastore-scripts
-        # - name: hive-metastore-db-data
-        #   mountPath: /var/lib/hive
-        # - name: namenode-empty
-        #   mountPath: /hadoop/dfs/name
-        # - name: datanode-empty
-        #   mountPath: /hadoop/dfs/data
         - name: hadoop-logs
           mountPath: /opt/hadoop/logs
         - name: hadoop-config
