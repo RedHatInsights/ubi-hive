@@ -306,6 +306,7 @@ objects:
       > $METASTORE_HOME/conf/metastore-site.xml
 
       ln -s -f /metastore-config/metastore-log4j2.properties $METASTORE_HOME/conf/metastore-log4j2.properties
+      ln -s -f /metastore-config/jmx-config.yaml $METASTORE_HOME/conf/jmx-config.yaml
 
       # Set garbage collection settings
       export GC_SETTINGS="-XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${HADOOP_HOME}/logs/heap_dump.bin -XX:+ExitOnOutOfMemoryError -XX:ErrorFile=${HADOOP_HOME}/logs/java_error%p.log"
