@@ -1,5 +1,7 @@
 # ubi-hive
 
+2021-12-14 update: The image here was converted to a standalone metastore with the postgres jdbc interface. The new standalone images will include `metastore` in their tag name.
+
 Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgresql jdbc interfaces.
 
 # Workflow
@@ -17,8 +19,7 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 
 1. Check available releases [here](https://downloads.apache.org/hive/). If current version is desired version, then stop unless you need a different hadoop image tag.
 2. Checkout `main` and pull
-3. Update `Dockerfile` : `ARG HIVE_VERSION` setting it to the version required.
-4. If ubi-hadoop image tag is out-of-date, change the FROM line in the Dockerfile to reference the correct hadoop image tag.
+3. Update `Dockerfile` : `ENV HIVE_VERSION` setting it to the version required.
 5. Execute `get_hive_version.sh` to make sure that the output matches the new hive version.
 6. Increment the value in `image_build_num.txt`
 7. Run a test build by executing `pr_check.sh`
@@ -28,8 +29,8 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 
 # Utility Scripts
 
-* `get_hive_version.sh` : Get the current hive version from the `Dockerfile`.
-* `get_image_tag.sh` : Return the image tag made from the hive version and the build number from `image_build_num.txt`
+* `get_metastore_version.sh` : Get the current hive standalone-metastore version from the `Dockerfile`.
+* `get_image_tag.sh` : Return the image tag made from the metastore version and the build number from `image_build_num.txt`
 * `docker-build-dev.sh` : Executes a local test build of the docker image.
 
 # Integration Scripts
