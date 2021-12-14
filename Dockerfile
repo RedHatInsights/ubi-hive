@@ -24,6 +24,7 @@ WORKDIR /opt
 
 ENV HADOOP_VERSION=3.3.1
 ENV METASTORE_VERSION=3.1.2
+ENV PROMETHEUS_VERSION=0.16.1
 
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
@@ -49,7 +50,9 @@ RUN \
     curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.15.0/log4j-1.2-api-2.15.0.jar  && \
     curl -o ${METASTORE_HOME}/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \
     curl -o ${METASTORE_HOME}/lib/log4j-core-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.15.0/log4j-core-2.15.0.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar
+    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar && \
+    # needed for metrics server:
+    curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 ##############################
 
 COPY default/conf/metastore-site.xml ${METASTORE_HOME}/conf
