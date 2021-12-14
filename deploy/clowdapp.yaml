@@ -23,6 +23,16 @@ objects:
           <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
         </property>
         <property>
+          <name>metastore.metrics.enabled</name>
+          <value>true</value>
+          <description>Enable metrics on the metastore.</description>
+        </property>
+        <property>
+          <name>metastore.metrics.reporters</name>
+          <value>jmx</value>
+          <description>A comma separated list of metrics reporters to start</description>
+        </property>
+        <property>
           <name>datanucleus.schema.autoCreateAll</name>
           <value>false</value>
           <description>Auto creates necessary schema on a startup if one doesn't exist. Set this to false, after creating it once.To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not recommended for production use cases, run schematool command instead.</description>
