@@ -12,9 +12,12 @@ RUN yum -y update && yum clean all
 RUN \
     # symlink the python3.6 installed in the container
     ln -s /usr/libexec/platform-python /usr/bin/python && \
-    # add PostgreSQL RPM repository
+    # add PostgreSQL RPM repository to gain access to the postgres jdbc
     yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
     set -xeu && \
+    # Java 1.8 required for Hive/Hadoop
+    # postgresql-jdbc needed so Hive can connect to postgres
+    # jq is needed for the clowdapp entrypoint script to work properly
     INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
     yum install -y $INSTALL_PKGS && \
     yum clean all && \
@@ -30,10 +33,11 @@ ENV HADOOP_HOME=/opt/hadoop
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
 ENV METASTORE_HOME=/opt/hive-metastore-bin
 
-RUN mkdir -p ${METASTORE_HOME}
+# Fetch the compiled Hadoop and Standalone Metastore
+RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
-    curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1 && \
-    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1
+    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
+    curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1
 
 RUN \
     # Configure Hadoop AWS Jars to be available to hive
@@ -51,10 +55,11 @@ RUN \
     curl -o ${METASTORE_HOME}/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \
     curl -o ${METASTORE_HOME}/lib/log4j-core-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.15.0/log4j-core-2.15.0.jar && \
     curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar && \
-    # needed for metrics server:
+    # Fetch the jmx exporter. Needed for metrics server and liveness/readiness probes:
     curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 ##############################
 
+# Move the default configuration files into the container
 COPY default/conf/metastore-site.xml ${METASTORE_HOME}/conf
 COPY default/conf/metastore-log4j2.properties ${METASTORE_HOME}/conf
 COPY default/scripts/entrypoint.sh /entrypoint.sh
