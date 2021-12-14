@@ -279,7 +279,7 @@ objects:
       fi
 
       # Set JMX options
-      export JMX_OPTIONS="-javaagent:/opt/jmx_exporter/jmx_exporter.jar=9000:/opt/jmx_exporter/config/config.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Djava.rmi.server.hostname=127.0.0.1"
+      export JMX_OPTIONS="-javaagent:${METASTORE_HOME}/lib/jmx_exporter.jar=9000:/opt/jmx_exporter/config/config.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Djava.rmi.server.hostname=127.0.0.1"
 
       # Set garbage collection logs
       export GC_SETTINGS="${GC_SETTINGS} -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_LOG_DIR}/gc.log"
@@ -288,7 +288,6 @@ objects:
       export HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
       export HADOOP_CLASSPATH=${HADOOP_HOME}/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.375.jar:${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-aws-${HADOOP_VERSION}.jar
       export METASTORE_OPTS="${VM_OPTIONS} ${GC_SETTINGS} ${JMX_OPTIONS} ${METASTORE_OPTS} --hiveconf metastore.root.logger=${HIVE_LOGLEVEL},console "
-      export PATH=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin/bin:$PATH
 
       set +e
       if schematool -dbType postgres -info -verbose; then
