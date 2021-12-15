@@ -47,17 +47,17 @@
 <property>
     <name>fs.s3a.endpoint</name>
     <description>AWS S3 endpoint to connect to.</description>
-    <value>http://${env.MINIO_HOST}:${env.MINIO_PORT}</value>
+    <value>http://${env.S3_HOST}:${env.S3_PORT}</value>
 </property>
 <property>
     <name>fs.s3a.access.key</name>
     <description>AWS access key ID.</description>
-    <value>${env.MINIO_ROOT_USER}</value>
+    <value>${env.S3_ACCESS_KEY}</value>
 </property>
 <property>
     <name>fs.s3a.secret.key</name>
     <description>AWS secret key.</description>
-    <value>${env.MINIO_ROOT_PASSWORD}</value>
+    <value>${env.S3_SECRET}</value>
 </property>
 <property>
     <name>fs.s3a.path.style.access</name>
