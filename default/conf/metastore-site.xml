@@ -6,7 +6,7 @@
 </property>
 <property>
     <name>metastore.thrift.uris</name>
-    <value>thrift://${HOSTNAME}:8000</value>
+    <value>thrift://${env.HOSTNAME}:8000</value>
     <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
 </property>
 <property>
@@ -47,17 +47,17 @@
 <property>
     <name>fs.s3a.endpoint</name>
     <description>AWS S3 endpoint to connect to.</description>
-    <value>http://localhost:9000</value>
+    <value>http://${env.MINIO_HOST}:${env.MINIO_PORT}</value>
 </property>
 <property>
     <name>fs.s3a.access.key</name>
     <description>AWS access key ID.</description>
-    <value>${MINIO_ROOT_USER}</value>
+    <value>${env.MINIO_ROOT_USER}</value>
 </property>
 <property>
     <name>fs.s3a.secret.key</name>
     <description>AWS secret key.</description>
-    <value>${MINIO_ROOT_PASSWORD}</value>
+    <value>${env.MINIO_ROOT_PASSWORD}</value>
 </property>
 <property>
     <name>fs.s3a.path.style.access</name>
@@ -66,11 +66,11 @@
 </property>
 <property>
     <name>metastore.warehouse.dir</name>
-    <value>s3a://metastore-bucket/data/</value>
+    <value>s3a://${env.S3_BUCKET_NAME}/${env.S3_BUCKET_PATH}/</value>
 </property>
 <property>
     <name>hive.metastore.db.type</name>
-    <value>POSTGRES</value>
+    <value>postgres</value>
     <description>
     Expects one of [derby, oracle, mysql, mssql, postgres].
     Type of database used by the metastore. Information schema &amp; JDBCStorageHandler depend on it.
@@ -78,17 +78,17 @@
 </property>
 <property>
     <name>javax.jdo.option.ConnectionUserName</name>
-    <value>hive</value>
+    <value>${env.DATABASE_USER}</value>
     <description>Username to use against metastore database</description>
 </property>
 <property>
     <name>javax.jdo.option.ConnectionPassword</name>
-    <value>hive</value>
+    <value>${env.DATABASE_PASSWORD}</value>
     <description>password to use against metastore database</description>
 </property>
 <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:postgresql://localhost:15432/hive?sslmode=prefer</value>
+    <value>jdbc:postgresql://${env.POSTGRES_SQL_SERVICE_HOST}:${env.POSTGRES_SQL_SERVICE_PORT}/${env.DATABASE_NAME}?sslmode=prefer</value>
     <description>
     JDBC connect string for a JDBC metastore.
     To use SSL to encrypt/authenticate the connection, provide database-specific SSL flag in the connection URL.
