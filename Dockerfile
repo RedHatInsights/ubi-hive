@@ -45,8 +45,8 @@ RUN \
     # Configure Postgesql connector jar to be available to hive
     ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
 
-####### CVE-2021-44228, CVE-2021-45046 #######
-ARG LOG4J_VERSION=2.16.0
+####### CVE-2021-44228, CVE-2021-45046, CVE-2021-45105 #######
+ARG LOG4J_VERSION=2.17.0
 ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
 RUN \
     rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
