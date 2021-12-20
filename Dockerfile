@@ -51,10 +51,10 @@ ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
 RUN \
     rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
     rm -f ${METASTORE_HOME}/lib/log4j-* && \
-    curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.15.0/log4j-1.2-api-2.15.0.jar  && \
-    curl -o ${METASTORE_HOME}/lib/log4j-api-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.15.0/log4j-api-2.15.0.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-core-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.15.0/log4j-core-2.15.0.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-2.15.0.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.15.0/log4j-slf4j-impl-2.15.0.jar && \
+    curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-${LOG4J_VERSION}.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/${LOG4J_VERSION}/log4j-1.2-api-${LOG4J_VERSION}.jar  && \
+    curl -o ${METASTORE_HOME}/lib/log4j-api-${LOG4J_VERSION}.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/${LOG4J_VERSION}/log4j-api-${LOG4J_VERSION}.jar && \
+    curl -o ${METASTORE_HOME}/lib/log4j-core-${LOG4J_VERSION}.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/${LOG4J_VERSION}/log4j-core-${LOG4J_VERSION}.jar && \
+    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-${LOG4J_VERSION}.jar https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/${LOG4J_VERSION}/log4j-slf4j-impl-${LOG4J_VERSION}.jar && \
     # Fetch the jmx exporter. Needed for metrics server and liveness/readiness probes:
     curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 ##############################
