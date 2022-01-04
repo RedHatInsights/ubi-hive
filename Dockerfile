@@ -47,7 +47,7 @@ RUN \
 
 ####### CVE-2021-44228, CVE-2021-45046, CVE-2021-45105, CVE-2021-44832 #######
 ARG LOG4J_VERSION=2.17.1
-ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j/"
+ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j"
 RUN \
     rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
     rm -f ${METASTORE_HOME}/lib/log4j-* && \
