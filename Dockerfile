@@ -60,6 +60,7 @@ RUN \
 ##############################################################################
 
 # Move the default configuration files into the container
+COPY default/conf/jmx-config.yaml ${METASTORE_HOME}/conf
 COPY default/conf/metastore-site.xml ${METASTORE_HOME}/conf
 COPY default/conf/metastore-log4j2.properties ${METASTORE_HOME}/conf
 COPY default/scripts/entrypoint.sh /entrypoint.sh
@@ -84,6 +85,6 @@ RUN chown -R 1000:0 ${HOME} /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/
     chmod -R 775 ${HOME}
 
 USER metastore
-EXPOSE 8000
+EXPOSE 1000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
