@@ -85,6 +85,6 @@ RUN chown -R 1000:0 ${HOME} /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/
     chmod -R 775 ${HOME}
 
 USER metastore
-EXPOSE 8000
+EXPOSE 1000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
