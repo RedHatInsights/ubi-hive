@@ -60,6 +60,7 @@ RUN \
 ##############################################################################
 
 # Move the default configuration files into the container
+COPY default/conf/jmx-config.yaml ${METASTORE_HOME}/conf
 COPY default/conf/metastore-site.xml ${METASTORE_HOME}/conf
 COPY default/conf/metastore-log4j2.properties ${METASTORE_HOME}/conf
 COPY default/scripts/entrypoint.sh /entrypoint.sh

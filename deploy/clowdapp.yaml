@@ -14,12 +14,12 @@ objects:
       <configuration>
         <property>
           <name>metastore.thrift.port</name>
-          <value>8000</value>
+          <value>10000</value>
           <description>Hive metastore listener port</description>
         </property>
         <property>
           <name>metastore.thrift.uris</name>
-          <value>thrift://${HOSTNAME}:8000</value>
+          <value>thrift://${HOSTNAME}:10000</value>
           <description>Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore.</description>
         </property>
         <property>
@@ -323,7 +323,7 @@ objects:
       fi
 
       # Set JMX options
-      export JMX_OPTIONS="-javaagent:${METASTORE_HOME}/lib/jmx_exporter.jar=9000:${METASTORE_HOME}/conf/jmx-config.yaml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=10000 -Dcom.sun.management.jmxremote.rmi.port=10000 -Djava.rmi.server.hostname=127.0.0.1"
+      export JMX_OPTIONS="-javaagent:${METASTORE_HOME}/lib/jmx_exporter.jar=9000:${METASTORE_HOME}/conf/jmx-config.yaml"
 
       # Set garbage collection logs
       export GC_SETTINGS="${GC_SETTINGS} -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xloggc:${HADOOP_HOME}/logs/gc.log"
@@ -394,7 +394,7 @@ objects:
       minReplicas: ${{MIN_REPLICAS}}
       webServices:
         public:
-          enabled: true
+          enabled: false
         private:
           enabled: true
         metrics:
@@ -405,7 +405,7 @@ objects:
         livenessProbe:
           failureThreshold: 3
           tcpSocket:
-            port: 8000
+            port: 10000
           initialDelaySeconds: 60
           periodSeconds: 10
           successThreshold: 1

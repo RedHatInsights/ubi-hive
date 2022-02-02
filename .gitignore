@@ -2,3 +2,6 @@
 .python-version
 
 config.yaml
+
+opt/
+.env
