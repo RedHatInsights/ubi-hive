@@ -310,7 +310,7 @@ objects:
 
       # Set garbage collection settings
       export GC_SETTINGS="-XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${HADOOP_HOME}/logs/heap_dump.bin -XX:+ExitOnOutOfMemoryError -XX:ErrorFile=${HADOOP_HOME}/logs/java_error%p.log"
-      export VM_OPTIONS="$VM_OPTIONS -XX:+UseContainerSupport"
+      export VM_OPTIONS="$VM_OPTIONS -XshowSettings:VM -XX:+UseContainerSupport"
 
       if [ -n "$JVM_INITIAL_RAM_PERCENTAGE" ]; then
         VM_OPTIONS="$VM_OPTIONS -XX:InitialRAMPercentage=$JVM_INITIAL_RAM_PERCENTAGE"
