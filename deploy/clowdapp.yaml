@@ -515,7 +515,7 @@ parameters:
 - description: maximum heap size
   displayName: xmx
   name: MAX_HEAP_SIZE
-  value: '1G'
+  value: '256M'
 - description: Initial amount of memory the container will request.
   displayName: Memory Request
   name: MEMORY_REQUEST
