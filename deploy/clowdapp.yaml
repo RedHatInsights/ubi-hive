@@ -310,7 +310,7 @@ objects:
 
       # Set garbage collection settings
       export GC_SETTINGS="-XX:+UseG1GC -XX:G1HeapRegionSize=32M -XX:+UseGCOverheadLimit -XX:+ExplicitGCInvokesConcurrent -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${HADOOP_HOME}/logs/heap_dump.bin -XX:+ExitOnOutOfMemoryError -XX:ErrorFile=${HADOOP_HOME}/logs/java_error%p.log"
-      export VM_OPTIONS="$VM_OPTIONS -XshowSettings:VM -XX:+UseContainerSupport"
+      export VM_OPTIONS="$VM_OPTIONS -Xmx$MAX_HEAP_SIZE -XshowSettings:VM -XX:+UseContainerSupport"
 
       if [ -n "$JVM_INITIAL_RAM_PERCENTAGE" ]; then
         VM_OPTIONS="$VM_OPTIONS -XX:InitialRAMPercentage=$JVM_INITIAL_RAM_PERCENTAGE"
@@ -454,6 +454,8 @@ objects:
             resourceFieldRef:
               containerName: hive-metastore
               resource: limits.memory
+        - name: MAX_HEAP_SIZE
+          value: ${MAX_HEAP_SIZE}
         resources:
           requests:
             cpu: ${CPU_REQUEST}
@@ -510,6 +512,10 @@ parameters:
   requred: false
 - name: MIN_REPLICAS
   value: "1"
+- description: maximum heap size
+  displayName: xmx
+  name: MAX_HEAP_SIZE
+  value: '1G'
 - description: Initial amount of memory the container will request.
   displayName: Memory Request
   name: MEMORY_REQUEST
