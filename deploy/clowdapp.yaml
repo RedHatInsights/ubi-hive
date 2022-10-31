@@ -391,6 +391,9 @@ objects:
     envName: ${ENV_NAME}
     deployments:
     - name: metastore
+      metadata:
+        annotations:
+          ignore-check.kube-linter.io/minimum-three-replicas: This deployment uses 1 pod as currently the metastore is a singleton
       minReplicas: ${{MIN_REPLICAS}}
       webServices:
         public:
