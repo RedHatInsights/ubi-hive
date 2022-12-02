@@ -387,6 +387,8 @@ objects:
   kind: ClowdApp
   metadata:
     name: hive
+    annotations:
+      ignore-check.kube-linter.io/minimum-three-replicas: This deployment uses 1 pod as currently the metastore is a singleton
   spec:
     envName: ${ENV_NAME}
     deployments:
