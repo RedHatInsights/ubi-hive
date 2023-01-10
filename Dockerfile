@@ -36,7 +36,7 @@ ENV METASTORE_HOME=/opt/hive-metastore-bin
 # Fetch the compiled Hadoop and Standalone Metastore
 RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
-    curl -L http://apache.mirrors.hoobly.com/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
+    curl -L https://downloads.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
     curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1
 
 RUN \
