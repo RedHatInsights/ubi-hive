@@ -21,8 +21,8 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 2. Checkout `main` and pull
 3. Update `Dockerfile` : `ENV HIVE_VERSION` setting it to the version required.
 5. Execute `get_hive_version.sh` to make sure that the output matches the new hive version.
-6. Increment the value in `image_build_num.txt`
-7. Run a test build by executing `pr_check.sh`
+6. Increment the value in `image_build_num.txt` using the `make bump-image-tag` command.
+7. Run a test build by executing `pr_check.sh`.
 8. If successful, then commit changes and push branch.
 9. Create a PR, this should execute a PR check script.
 10. If successful, get approval and merge.
