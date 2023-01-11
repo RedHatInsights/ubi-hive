@@ -54,6 +54,9 @@ lint:
 build:
 	./docker-build-dev.sh
 
+bump-image-tag:
+	./bump-image-tag.sh
+
 bonfire-config-local:
 	@cp dev/default_config.yaml.local.example config.yaml
 	@sed -i ${OS_SED} 's|REPO|$(PWD)|g' config.yaml

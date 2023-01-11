@@ -23,6 +23,7 @@ jobs:
           git config user.name 'Update-a-Bot'
           git config user.email 'insights@redhat.com'
           git add .baseimagedigest
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then echo "No new changes"; else make bump-image-tag; fi
           git commit -m "chore(image): update and rebuild image" || echo "No new changes"
       - name: Create pull request
         uses: peter-evans/create-pull-request@v4
