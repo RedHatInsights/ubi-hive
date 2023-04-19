@@ -19,8 +19,8 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 
 1. Check available releases [here](https://downloads.apache.org/hive/). If current version is desired version, then stop unless you need a different hadoop image tag.
 2. Checkout `main` and pull
-3. Update `Dockerfile` : `ENV HIVE_VERSION` setting it to the version required.
-5. Execute `get_hive_version.sh` to make sure that the output matches the new hive version.
+3. Update `Dockerfile` : `ENV METASTORE_VERSION` setting it to the version required.
+5. Execute `get_metastore_version.sh` to make sure that the output matches the new hive version.
 6. Increment the value in `image_build_num.txt` using the `make bump-image-tag` command.
 7. Run a test build by executing `pr_check.sh`.
 8. If successful, then commit changes and push branch.

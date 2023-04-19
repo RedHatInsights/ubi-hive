@@ -25,8 +25,8 @@ RUN \
 
 WORKDIR /opt
 
-ENV HADOOP_VERSION=3.3.1
-ENV METASTORE_VERSION=3.1.2
+ENV HADOOP_VERSION=3.3.5
+ENV METASTORE_VERSION=3.1.3
 ENV PROMETHEUS_VERSION=0.16.1
 
 ENV HADOOP_HOME=/opt/hadoop
@@ -88,3 +88,5 @@ USER metastore
 EXPOSE 1000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
+LABEL quay.expires-after=3d
+LABEL quay.expires-after=3d
