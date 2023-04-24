@@ -23,7 +23,7 @@ Docker Image build of Hive from RHEL UBI base image. This includes mysql, postgr
 5. Execute `get_metastore_version.sh` to make sure that the output matches the new hive version.
 6. Increment the value in `image_build_num.txt` using the `make bump-image-tag` command.
 7. Run a test build by executing `pr_check.sh`.
-8. If successful, then commit changes and push branch.
+8. If successful, remove `LABEL quay.expires-after=3d` from `Dockerfile` then commit changes and push branch.
 9. Create a PR, this should execute a PR check script.
 10. If successful, get approval and merge.
 

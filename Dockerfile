@@ -88,5 +88,3 @@ USER metastore
 EXPOSE 1000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
-LABEL quay.expires-after=3d
-LABEL quay.expires-after=3d
