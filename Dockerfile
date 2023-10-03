@@ -27,7 +27,7 @@ WORKDIR /opt
 
 ENV HADOOP_VERSION=3.3.6
 ENV METASTORE_VERSION=3.1.3
-ENV PROMETHEUS_VERSION=0.16.1
+ENV PROMETHEUS_VERSION=0.20.1
 
 ENV HADOOP_HOME=/opt/hadoop
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
@@ -45,15 +45,7 @@ RUN \
     # Configure Postgesql connector jar to be available to hive
     ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
 
-####### CVE-2021-44228, CVE-2021-45046, CVE-2021-45105, CVE-2021-44832 #######
-ARG LOG4J_VERSION=2.17.1
-ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j"
 RUN \
-    rm -f ${METASTORE_HOME}/lib/log4j-* && \
-    curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-1.2-api/${LOG4J_VERSION}/log4j-1.2-api-${LOG4J_VERSION}.jar  && \
-    curl -o ${METASTORE_HOME}/lib/log4j-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-api/${LOG4J_VERSION}/log4j-api-${LOG4J_VERSION}.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-core-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-core/${LOG4J_VERSION}/log4j-core-${LOG4J_VERSION}.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-slf4j-impl/${LOG4J_VERSION}/log4j-slf4j-impl-${LOG4J_VERSION}.jar && \
     # Fetch the jmx exporter. Needed for metrics server and liveness/readiness probes:
     curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 ##############################################################################
