@@ -36,7 +36,7 @@ ENV METASTORE_HOME=/opt/hive-metastore-bin
 # Fetch the compiled Hadoop and Standalone Metastore
 RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
-    curl -L https://downloads.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
+    curl -L https://downloads.apache.org/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
     curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1
 
 RUN \
@@ -49,7 +49,6 @@ RUN \
 ARG LOG4J_VERSION=2.17.1
 ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j"
 RUN \
-    rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
     rm -f ${METASTORE_HOME}/lib/log4j-* && \
     curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-1.2-api/${LOG4J_VERSION}/log4j-1.2-api-${LOG4J_VERSION}.jar  && \
     curl -o ${METASTORE_HOME}/lib/log4j-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-api/${LOG4J_VERSION}/log4j-api-${LOG4J_VERSION}.jar && \
