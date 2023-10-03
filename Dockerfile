@@ -19,7 +19,7 @@ RUN \
     # postgresql-jdbc needed so Hive can connect to postgres
     # jq is needed for the clowdapp entrypoint script to work properly
     INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
-    yum install -y $INSTALL_PKGS && \
+    yum install -y $INSTALL_PKGS --setopt=install_weak_deps=False --setopt=tsflags=nodocs && \
     yum clean all && \
     rm -rf /var/cache/yum
 
