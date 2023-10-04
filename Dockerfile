@@ -19,15 +19,15 @@ RUN \
     # postgresql-jdbc needed so Hive can connect to postgres
     # jq is needed for the clowdapp entrypoint script to work properly
     INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
-    yum install -y $INSTALL_PKGS && \
+    yum install -y $INSTALL_PKGS --setopt=install_weak_deps=False --setopt=tsflags=nodocs && \
     yum clean all && \
     rm -rf /var/cache/yum
 
 WORKDIR /opt
 
-ENV HADOOP_VERSION=3.3.5
+ENV HADOOP_VERSION=3.3.6
 ENV METASTORE_VERSION=3.1.3
-ENV PROMETHEUS_VERSION=0.16.1
+ENV PROMETHEUS_VERSION=0.20.0
 
 ENV HADOOP_HOME=/opt/hadoop
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
@@ -36,7 +36,7 @@ ENV METASTORE_HOME=/opt/hive-metastore-bin
 # Fetch the compiled Hadoop and Standalone Metastore
 RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
-    curl -L https://downloads.apache.org/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
+    curl -L https://downloads.apache.org/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
     curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1
 
 RUN \
@@ -45,16 +45,7 @@ RUN \
     # Configure Postgesql connector jar to be available to hive
     ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
 
-####### CVE-2021-44228, CVE-2021-45046, CVE-2021-45105, CVE-2021-44832 #######
-ARG LOG4J_VERSION=2.17.1
-ARG LOG4J_LOCATION="https://repo1.maven.org/maven2/org/apache/logging/log4j"
 RUN \
-    rm -f ${HADOOP_HOME}/share/hadoop/common/lib/slf4j-log4j12* && \
-    rm -f ${METASTORE_HOME}/lib/log4j-* && \
-    curl -o ${METASTORE_HOME}/lib/log4j-1.2-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-1.2-api/${LOG4J_VERSION}/log4j-1.2-api-${LOG4J_VERSION}.jar  && \
-    curl -o ${METASTORE_HOME}/lib/log4j-api-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-api/${LOG4J_VERSION}/log4j-api-${LOG4J_VERSION}.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-core-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-core/${LOG4J_VERSION}/log4j-core-${LOG4J_VERSION}.jar && \
-    curl -o ${METASTORE_HOME}/lib/log4j-slf4j-impl-${LOG4J_VERSION}.jar ${LOG4J_LOCATION}/log4j-slf4j-impl/${LOG4J_VERSION}/log4j-slf4j-impl-${LOG4J_VERSION}.jar && \
     # Fetch the jmx exporter. Needed for metrics server and liveness/readiness probes:
     curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 ##############################################################################
