@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install skopeo
         run: sudo apt-get install -y skopeo
       - name: Check change
@@ -26,6 +26,6 @@ jobs:
           if [ $(git status --porcelain | wc -l) -eq "0" ]; then echo "No new changes"; else make bump-image-tag; fi
           git commit -m "chore(image): update and rebuild image" || echo "No new changes"
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v6
         with:
           title: 'chore(image): update base image'
