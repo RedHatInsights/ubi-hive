@@ -43,6 +43,11 @@ objects:
           <description>Auto creates necessary schema on a startup if one doesn't exist. Set this to false, after creating it once.To enable auto create also set hive.metastore.schema.verification=false. Auto creation is not recommended for production use cases, run schematool command instead.</description>
         </property>
         <property>
+          <name>datanucleus.connectionPool.maxPoolSize</name>
+          <value>8</value>
+          <description>Specify the maximum number of connections in the connection pool.</description>
+        </property>
+        <property>
           <name>hive.metastore.schema.verification</name>
           <value>true</value>
           <description>
