@@ -44,7 +44,7 @@ objects:
         </property>
         <property>
           <name>datanucleus.connectionPool.maxPoolSize</name>
-          <value>8</value>
+          <value>XXX_HIVE_CONNECTIONPOOL_MAX_SIZE_XXX</value>
           <description>Specify the maximum number of connections in the connection pool.</description>
         </property>
         <property>
@@ -308,6 +308,7 @@ objects:
         -e "s#XXX_DATABASE_USER_XXX#${DATABASE_USER}#" \
         -e "s#XXX_DATABASE_PASSWORD_XXX#${DATABASE_PASSWORD}#" \
         -e "s#XXX_DATABASE_CONNECT_URL_XXX#postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_NAME}?sslmode=${DATABASE_SSLMODE}#" \
+        -e "s#XXX_HIVE_CONNECTIONPOOL_MAX_SIZE_XXX#${HIVE_CONNECTIONPOOL_MAX_SIZE}#" \
       > $METASTORE_HOME/conf/metastore-site.xml
 
       ln -s -f /metastore-config/metastore-log4j2.properties $METASTORE_HOME/conf/metastore-log4j2.properties
@@ -568,3 +569,5 @@ parameters:
   value: hive
 - name: HIVE_DB_PASSWORD_EPH
   value: hive
+- name: HIVE_CONNECTIONPOOL_MAX_SIZE
+  value: '8'
