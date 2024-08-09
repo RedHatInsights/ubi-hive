@@ -346,7 +346,7 @@ objects:
       if schematool -dbType postgres -info -verbose; then
           echo "Hive metastore schema verified."
       else
-          if schematool -dbType postgres -initSchema -verbose; then
+          if schematool -dbType postgres -initOrUpgradeSchema -verbose; then
               echo "Hive metastore schema created."
           else
               echo "Error creating hive metastore: $?"

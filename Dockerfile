@@ -1,5 +1,13 @@
+ARG HADOOP_VERSION=3.4.0
+ARG METASTORE_VERSION=4.0.0
+ARG PROMETHEUS_VERSION=0.20.0
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+
+FROM registry.access.redhat.com/ubi9/ubi:latest as build
+
+ARG HADOOP_VERSION
+ARG METASTORE_VERSION
+ARG PROMETHEUS_VERSION
 
 LABEL io.k8s.display-name="OpenShift Hive Metastore" \
     io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
@@ -7,27 +15,20 @@ LABEL io.k8s.display-name="OpenShift Hive Metastore" \
     io.openshift.tags="openshift" \
     maintainer="<cost-mgmt@redhat.com>"
 
-RUN yum -y update && yum clean all
+# RUN yum -y update && yum clean all
 
 RUN \
-    # symlink the python3.6 installed in the container
-    ln -s /usr/libexec/platform-python /usr/bin/python && \
-    # add PostgreSQL RPM repository to gain access to the postgres jdbc
-    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
     set -xeu && \
+    # yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-aarch64/pgdg-redhat-repo-latest.noarch.rpm && \
     # Java 1.8 required for Hive/Hadoop
     # postgresql-jdbc needed so Hive can connect to postgres
     # jq is needed for the clowdapp entrypoint script to work properly
-    INSTALL_PKGS="java-1.8.0-openjdk postgresql-jdbc openssl jq" && \
-    yum install -y $INSTALL_PKGS --setopt=install_weak_deps=False --setopt=tsflags=nodocs && \
-    yum clean all && \
-    rm -rf /var/cache/yum
+    INSTALL_PKGS="java-1.8.0-openjdk java-1.8.0-openjdk-devel maven postgresql-jdbc" && \
+    yum install -y $INSTALL_PKGS --setopt=install_weak_deps=False --setopt=tsflags=nodocs
 
 WORKDIR /opt
 
-ENV HADOOP_VERSION=3.3.6
-ENV METASTORE_VERSION=3.1.3
-ENV PROMETHEUS_VERSION=0.20.0
 
 ENV HADOOP_HOME=/opt/hadoop
 ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
@@ -37,18 +38,58 @@ ENV METASTORE_HOME=/opt/hive-metastore-bin
 RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
     curl -L https://downloads.apache.org/hadoop/core/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar -zxf - -C ${HADOOP_HOME} --strip 1 && \
-    curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1
+    curl -L https://repo1.maven.org/maven2/org/apache/hive/hive-standalone-metastore/${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-src.tar.gz | tar -zxf - -C ${METASTORE_HOME} --strip 1 && \
+    curl -o jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
 
-RUN \
-    # Configure Hadoop AWS Jars to be available to hive
-    ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${METASTORE_HOME}/lib && \
-    # Configure Postgesql connector jar to be available to hive
-    ln -s /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
 
-RUN \
-    # Fetch the jmx exporter. Needed for metrics server and liveness/readiness probes:
-    curl -o ${METASTORE_HOME}/lib/jmx_exporter.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${PROMETHEUS_VERSION}/jmx_prometheus_javaagent-${PROMETHEUS_VERSION}.jar
+# build the metastore
+RUN cd ${METASTORE_HOME} && \
+    JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk mvn clean package -Dmaven.test.skip
+
+RUN tar -zxf ${METASTORE_HOME}/metastore-server/target/apache-hive-standalone-metastore-server-4.0.0-bin.tar.gz
+
+
+RUN rm -rf ${HADOOP_HOME}/share/doc ${HADOOP_HOME}/share/hadoop/yarn/timelineservice
+RUN find ${HADOOP_HOME} -name sources -type d -prune -exec rm -rf {} \;
+RUN find . -name "*.war" -type f -delete
+
+
 ##############################################################################
+
+FROM registry.access.redhat.com/ubi9/ubi:latest
+
+ARG HADOOP_VERSION
+ARG METASTORE_VERSION
+ARG PROMETHEUS_VERSION
+
+WORKDIR /opt
+
+RUN yum -y update
+
+RUN \
+    set -xeu && \
+    # Java 1.8 required for Hive/Hadoop
+    # jq is needed for the clowdapp entrypoint script to work properly
+    INSTALL_PKGS="java-1.8.0-openjdk openssl jq" && \
+    yum install -y $INSTALL_PKGS --setopt=install_weak_deps=False --setopt=tsflags=nodocs && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+ENV HADOOP_HOME=/opt/hadoop
+ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
+ENV METASTORE_HOME=/opt/hive-metastore-bin
+
+RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
+
+COPY --from=build /opt/apache-hive-metastore-4.0.0-bin ${METASTORE_HOME}
+COPY --from=build /usr/share/java/postgresql-jdbc.jar ${METASTORE_HOME}/lib/postgresql-jdbc.jar
+COPY --from=build /opt/jmx_exporter.jar ${METASTORE_HOME}/lib
+
+COPY --from=build ${HADOOP_HOME} ${HADOOP_HOME}
+
+RUN ln -s ${HADOOP_HOME}/share/hadoop/tools/lib/*aws* ${METASTORE_HOME}/lib
+
+RUN sed -i -e 's/org.apache.hadoop.hive.metastore.tools.MetastoreSchemaTool/org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool/g' /opt/hive-metastore-bin/bin/ext/schemaTool.sh
 
 # Move the default configuration files into the container
 COPY default/conf/jmx-config.yaml ${METASTORE_HOME}/conf
