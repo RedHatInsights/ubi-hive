@@ -10,7 +10,7 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: hccm
+    appstudio.openshift.io/application: ubi-hive
     appstudio.openshift.io/component: ubi-hive
     pipelines.appstudio.openshift.io/type: build
   name: ubi-hive-on-pull-request
@@ -22,7 +22,7 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: output-image
-      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/hccm/ubi-hive:on-pr-{{revision}}
+      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive/ubi-hive:on-pr-{{revision}}
     - name: image-expires-after
       value: 5d
     - name: dockerfile
