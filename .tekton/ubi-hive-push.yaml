@@ -21,7 +21,7 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: output-image
-      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive/ubi-hive:{{revision}}
+      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:{{revision}}
     - name: dockerfile
       value: /Dockerfile
   pipelineSpec:
