@@ -1,5 +1,5 @@
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM registry.access.redhat.com/ubi9/ubi:latest
 
 LABEL io.k8s.display-name="OpenShift Hive Metastore" \
     io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
