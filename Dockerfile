@@ -1,5 +1,5 @@
 
-FROM registry.access.redhat.com/ubi8/ubi:latest
+FROM registry.access.redhat.com/ubi9/ubi:latest
 
 LABEL io.k8s.display-name="OpenShift Hive Metastore" \
     io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
@@ -13,7 +13,7 @@ RUN \
     # symlink the python3.6 installed in the container
     ln -s /usr/libexec/platform-python /usr/bin/python && \
     # add PostgreSQL RPM repository to gain access to the postgres jdbc
-    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
     set -xeu && \
     # Java 1.8 required for Hive/Hadoop
     # postgresql-jdbc needed so Hive can connect to postgres
