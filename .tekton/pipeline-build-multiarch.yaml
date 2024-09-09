@@ -350,6 +350,9 @@ spec:
           - name: kind
             value: task
 
+          - name: skip-checks
+            value: "true"
+
       when:
         - input: $(params.skip-checks)
           operator: in
