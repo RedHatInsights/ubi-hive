@@ -42,7 +42,7 @@ spec:
       computeResources:
         requests:
           cpu: 2
-          memory: 3Gi
+          memory: 4Gi
 
   timeouts:
     tasks: 1h
