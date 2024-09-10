@@ -14,7 +14,6 @@ spec:
 
         - name: skip-checks
           value: $(params.skip-checks)
-
       taskRef:
         resolver: bundles
         params:
@@ -40,10 +39,8 @@ spec:
 
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
-
       runAfter:
         - init
-
       taskRef:
         resolver: bundles
         params:
@@ -55,13 +52,11 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(tasks.init.results.build)
           operator: in
           values:
             - "true"
-
       workspaces:
         - name: basic-auth
           workspace: git-auth
@@ -79,10 +74,8 @@ spec:
 
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
-
       runAfter:
         - clone-repository
-
       taskRef:
         resolver: bundles
         params:
@@ -94,7 +87,6 @@ spec:
 
           - name: kind
             value: task
-
       workspaces:
         - name: git-basic-auth
           workspace: git-auth
@@ -109,7 +101,6 @@ spec:
           - name: PLATFORM
             value:
               - $(params.build-platforms)
-
       params:
         - name: IMAGE
           value: $(params.output-image)
@@ -147,10 +138,8 @@ spec:
 
         - name: IMAGE_APPEND_PLATFORM
           value: "true"
-
       runAfter:
         - prefetch-dependencies
-
       taskRef:
         resolver: bundles
         params:
@@ -162,7 +151,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(tasks.init.results.build)
           operator: in
@@ -186,10 +174,8 @@ spec:
         - name: IMAGES
           value:
             - $(tasks.build-image.results.IMAGE_REF[*])
-
       runAfter:
         - build-image
-
       taskRef:
         resolver: bundles
         params:
@@ -201,7 +187,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(tasks.init.results.build)
           operator: in
@@ -215,10 +200,8 @@ spec:
 
         - name: IMAGE_DIGEST
           value: $(tasks.build-image-manifest.results.IMAGE_DIGEST)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -230,7 +213,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(params.skip-checks)
           operator: in
@@ -244,10 +226,8 @@ spec:
 
         - name: image-url
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -259,7 +239,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(params.skip-checks)
           operator: in
@@ -270,10 +249,8 @@ spec:
       params:
         - name: image-url
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -285,7 +262,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(params.skip-checks)
           operator: in
@@ -305,10 +281,8 @@ spec:
 
         - name: CACHI2_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -320,7 +294,6 @@ spec:
 
           - name: kind
             value: task
-
       when:
         - input: $(params.skip-checks)
           operator: in
@@ -334,10 +307,8 @@ spec:
 
         - name: image-url
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -349,24 +320,18 @@ spec:
 
           - name: kind
             value: task
-
-          - name: skip-checks
-            value: "true"
-
       when:
-        - input: $(params.skip-checks)
+        - input: "{{ event_type }}"
           operator: in
           values:
-            - "false"
+            - "push"
 
     - name: apply-tags
       params:
         - name: IMAGE
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -378,7 +343,6 @@ spec:
 
           - name: kind
             value: task
-
     - name: push-dockerfile
       params:
         - name: IMAGE
@@ -395,10 +359,8 @@ spec:
 
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
-
       runAfter:
         - build-image-manifest
-
       taskRef:
         resolver: bundles
         params:
@@ -516,7 +478,6 @@ spec:
       params:
         - name: IMAGE_URL
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
       taskRef:
         resolver: bundles
         params:
