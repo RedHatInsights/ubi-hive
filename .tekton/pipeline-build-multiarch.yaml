@@ -94,8 +94,15 @@ spec:
         - name: netrc
           workspace: netrc
 
+    - name: get-version
+      params:
+        - name: source_artifact
+          value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      taskRef:
+        name: get-version
+
     - name: build-image
-      displayName: build-image-${params.PLATFORM}
+      displayName: "build-image-$(params.PLATFORM)"
       matrix:
         params:
           - name: PLATFORM
@@ -330,6 +337,11 @@ spec:
       params:
         - name: IMAGE
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
+
+        - name: ADDITIONAL_TAGS
+          value:
+            - $(tasks.get-version.results.version_tag)
+
       runAfter:
         - build-image-manifest
       taskRef:
