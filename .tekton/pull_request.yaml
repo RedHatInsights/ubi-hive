@@ -6,7 +6,7 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{ revision }}'
     build.appstudio.redhat.com/target_branch: '{{ target_branch }}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event in ["pull_request", "push"] && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
   creationTimestamp: null
 
   labels:
@@ -15,7 +15,7 @@ metadata:
     pipelines.appstudio.openshift.io/type: build
 
   namespace: cost-mgmt-dev-tenant
-  name: ubi-hive-build
+  name: ubi-hive-pr
 
 spec:
   params:
@@ -26,13 +26,16 @@ spec:
       value: '{{ revision }}'
 
     - name: output-image
-      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:{{ revision }}
+      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:pr-{{ pull_request_number }}
 
     - name: dockerfile
       value: Dockerfile
 
     - name: path-context
       value: .
+
+    - name: image-expires-after
+      value: 5d
 
   pipelineRef:
     name: pipeline-build-multiarch
@@ -41,7 +44,7 @@ spec:
     - pipelineTaskName: clamav-scan
       computeResources:
         requests:
-          cpu: 2
+          cpu: 1500m
           memory: 4Gi
 
   timeouts:
