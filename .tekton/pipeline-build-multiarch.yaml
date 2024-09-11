@@ -133,6 +133,7 @@ spec:
         - name: BUILD_ARGS
           value:
             - $(params.build-args[*])
+            - version_tag=$(tasks.get-version.results.version_tag)
 
         - name: BUILD_ARGS_FILE
           value: $(params.build-args-file)
@@ -337,10 +338,6 @@ spec:
       params:
         - name: IMAGE
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
-
-        - name: ADDITIONAL_TAGS
-          value:
-            - $(tasks.get-version.results.version_tag)
 
       runAfter:
         - build-image-manifest
