@@ -17,7 +17,7 @@ spec:
       default: ./get_image_tag.sh
 
   results:
-    - name: version_tag
+    - name: version
       description: Image tag used for release version
 
   volumes:
@@ -44,4 +44,4 @@ spec:
         set -euo pipefail
 
         image_tag="$($(params.script))"
-        echo -n "$image_tag" | tee "$(results.version_tag.path)"
+        echo -n "$image_tag" | tee "$(results.version.path)"

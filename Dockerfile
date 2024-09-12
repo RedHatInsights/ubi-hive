@@ -2,14 +2,14 @@
 FROM registry.access.redhat.com/ubi9/ubi:latest
 
 ARG TARGETARCH
-ARG version_tag
+ARG VERSION
 
 LABEL io.k8s.display-name="OpenShift Hive Metastore"
 LABEL io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore."
 LABEL summary="This is an image used by Cost Management to install and run Hive Metastore."
 LABEL io.openshift.tags="openshift"
 LABEL maintainer="<cost-mgmt@redhat.com>"
-LABEL version=${version_tag}
+LABEL version=${VERSION}
 
 RUN yum -y update && yum clean all
 
