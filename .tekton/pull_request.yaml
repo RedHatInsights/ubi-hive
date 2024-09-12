@@ -42,10 +42,12 @@ spec:
 
   taskRunSpecs:
     - pipelineTaskName: clamav-scan
-      computeResources:
-        requests:
-          cpu: 1500m
-          memory: 4Gi
+      stepOverrides:
+        - name: extract-and-scan-image
+          computeResources:
+            requests:
+              cpu: 1500m
+              memory: 4Gi
 
   timeouts:
     tasks: 2h
