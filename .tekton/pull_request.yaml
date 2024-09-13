@@ -1,0 +1,58 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/RedHatInsights/ubi-hive?rev={{ revision }}
+    build.appstudio.redhat.com/commit_sha: '{{ revision }}'
+    build.appstudio.redhat.com/target_branch: '{{ target_branch }}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+  creationTimestamp: null
+
+  labels:
+    appstudio.openshift.io/application: ubi-hive
+    appstudio.openshift.io/component: ubi-hive
+    pipelines.appstudio.openshift.io/type: build
+
+  namespace: cost-mgmt-dev-tenant
+  name: ubi-hive-pr
+
+spec:
+  params:
+    - name: git-url
+      value: '{{ source_url }}'
+
+    - name: revision
+      value: '{{ revision }}'
+
+    - name: output-image
+      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:pr-{{ pull_request_number }}
+
+    - name: dockerfile
+      value: Dockerfile
+
+    - name: path-context
+      value: .
+
+    - name: image-expires-after
+      value: 5d
+
+  pipelineRef:
+    name: pipeline-build-multiarch
+
+  taskRunSpecs:
+    - pipelineTaskName: clamav-scan
+      stepOverrides:
+        - name: extract-and-scan-image
+          computeResources:
+            requests:
+              cpu: 1500m
+              memory: 4Gi
+
+  timeouts:
+    tasks: 2h
+
+  workspaces:
+    - name: git-auth
+      secret:
+        secretName: '{{ git_auth_secret }}'

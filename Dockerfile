@@ -1,11 +1,15 @@
 
 FROM registry.access.redhat.com/ubi9/ubi:latest
 
-LABEL io.k8s.display-name="OpenShift Hive Metastore" \
-    io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore." \
-    summary="This is an image used by Cost Management to install and run Hive Metastore." \
-    io.openshift.tags="openshift" \
-    maintainer="<cost-mgmt@redhat.com>"
+ARG TARGETARCH
+ARG VERSION
+
+LABEL io.k8s.display-name="OpenShift Hive Metastore"
+LABEL io.k8s.description="This is an image used by Cost Management to install and run Hive Metastore."
+LABEL summary="This is an image used by Cost Management to install and run Hive Metastore."
+LABEL io.openshift.tags="openshift"
+LABEL maintainer="<cost-mgmt@redhat.com>"
+LABEL version=${VERSION}
 
 RUN yum -y update && yum clean all
 
@@ -13,7 +17,8 @@ RUN \
     # symlink the python3.6 installed in the container
     ln -s /usr/libexec/platform-python /usr/bin/python && \
     # add PostgreSQL RPM repository to gain access to the postgres jdbc
-    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    case $TARGETARCH in arm64) PACKAGE_ARCH=aarch64;; amd64) PACKAGE_ARCH=x86_64; esac && \
+    yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-${PACKAGE_ARCH}/pgdg-redhat-repo-latest.noarch.rpm && \
     set -xeu && \
     # Java 1.8 required for Hive/Hadoop
     # postgresql-jdbc needed so Hive can connect to postgres
