@@ -556,11 +556,11 @@ parameters:
   value: "prefer"
 - description: Image name
   name: IMAGE
-  value: quay.io/cloudservices/ubi-hive
+  value: quay.io/redhat-services-prod/cost-mgmt-dev-tenant/ubi-hive
 - description: Image tag
   displayName: Image tag
   name: IMAGE_TAG
-  value: '2.3.3-002'
+  value: latest
   required: true
 - name: S3_BUCKET_NAME
   value: 'hive-s3'
