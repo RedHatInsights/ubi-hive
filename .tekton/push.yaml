@@ -46,6 +46,11 @@ spec:
               cpu: 1500m
               memory: 4Gi
 
+    - pipelineTaskName: ecosystem-cert-preflight-checks
+      computeResources:
+        requests:
+          memory: 1Gi
+
   timeouts:
     tasks: 2h
 
