@@ -329,10 +329,10 @@ spec:
           - name: kind
             value: task
       when:
-        - input: $(params.skip-checks)
+        - input: "{{ event_type }}"
           operator: in
           values:
-            - "false"
+            - "push"
 
     - name: apply-tags
       params:
