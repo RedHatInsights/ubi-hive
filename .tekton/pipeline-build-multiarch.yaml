@@ -339,6 +339,8 @@ spec:
         - name: IMAGE
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
 
+        - name: ADDITIONAL_TAGS
+          value: $(params.additional-tags)
       runAfter:
         - build-image-manifest
       taskRef:
@@ -456,6 +458,11 @@ spec:
       default:
         - linux/x86_64
         - linux/arm64
+
+    - name: additional-tags
+      description: Additional tags to apply to the pushed image
+      type: array
+      default: []
 
   workspaces:
     - name: git-auth
