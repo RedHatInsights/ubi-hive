@@ -340,7 +340,8 @@ spec:
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
 
         - name: ADDITIONAL_TAGS
-          value: $(params.additional-tags)
+          value:
+            - $(params.tag-prefix)$(tasks.clone-repository.results.short-commit)
       runAfter:
         - build-image-manifest
       taskRef:
@@ -354,6 +355,7 @@ spec:
 
           - name: kind
             value: task
+
     - name: push-dockerfile
       params:
         - name: IMAGE
@@ -459,10 +461,10 @@ spec:
         - linux/x86_64
         - linux/arm64
 
-    - name: additional-tags
-      description: Additional tags to apply to the pushed image
-      type: array
-      default: []
+    - name: tag-prefix
+      description: Prefix added to additional tags
+      type: string
+      default: ""
 
   workspaces:
     - name: git-auth
@@ -505,3 +507,4 @@ spec:
 
           - name: kind
             value: task
+

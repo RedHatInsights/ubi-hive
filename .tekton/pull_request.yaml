@@ -37,9 +37,8 @@ spec:
     - name: image-expires-after
       value: 5d
 
-    - name: additional-tags
-      value:
-        - pr-{{ pull_request_number }}-$(tasks.git-clone-oci-ta.results.short-commit)
+    - name: tag-prefix
+      value: pr-{{ pull_request_number }}-
 
   pipelineRef:
     name: pipeline-build-multiarch
