@@ -34,10 +34,6 @@ spec:
     - name: path-context
       value: .
 
-    - name: additional-tags
-      value:
-        - $(tasks.git-clone-oci-ta.results.short-commit)
-
   pipelineRef:
     name: pipeline-build-multiarch
 
