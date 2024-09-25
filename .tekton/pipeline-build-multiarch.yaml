@@ -329,16 +329,19 @@ spec:
           - name: kind
             value: task
       when:
-        - input: $(params.skip-checks)
+        - input: "{{ event_type }}"
           operator: in
           values:
-            - "false"
+            - "push"
 
     - name: apply-tags
       params:
         - name: IMAGE
           value: $(tasks.build-image-manifest.results.IMAGE_URL)
 
+        - name: ADDITIONAL_TAGS
+          value:
+            - $(params.tag-prefix)$(tasks.clone-repository.results.short-commit)
       runAfter:
         - build-image-manifest
       taskRef:
@@ -352,6 +355,7 @@ spec:
 
           - name: kind
             value: task
+
     - name: push-dockerfile
       params:
         - name: IMAGE
@@ -457,6 +461,11 @@ spec:
         - linux/x86_64
         - linux/arm64
 
+    - name: tag-prefix
+      description: Prefix added to additional tags
+      type: string
+      default: ""
+
   workspaces:
     - name: git-auth
       optional: true
@@ -498,3 +507,4 @@ spec:
 
           - name: kind
             value: task
+

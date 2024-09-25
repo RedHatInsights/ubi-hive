@@ -26,7 +26,7 @@ spec:
       value: '{{ revision }}'
 
     - name: output-image
-      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:pr-{{ pull_request_number }}
+      value: quay.io/redhat-user-workloads/cost-mgmt-dev-tenant/ubi-hive:pr-{{ pull_request_number }}-latest
 
     - name: dockerfile
       value: Dockerfile
@@ -36,6 +36,9 @@ spec:
 
     - name: image-expires-after
       value: 5d
+
+    - name: tag-prefix
+      value: pr-{{ pull_request_number }}-
 
   pipelineRef:
     name: pipeline-build-multiarch
