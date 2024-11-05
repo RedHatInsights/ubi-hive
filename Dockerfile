@@ -80,6 +80,8 @@ RUN chown -R 1000:0 ${HOME} /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/
     chmod -R 774 /etc/passwd $(readlink -f ${JAVA_HOME}/lib/security/cacerts) && \
     chmod -R 775 ${HOME}
 
+COPY LICENSE /licenses/AGPL-1.0-or-later.txt
+
 USER metastore
 EXPOSE 1000
 
