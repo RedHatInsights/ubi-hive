@@ -155,7 +155,7 @@ spec:
             value: buildah-remote-oci-ta
 
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-buildah-remote-oci-ta:0.2@sha256:7fd79c7d4c722e4355b5e0546fc84c1cbd2a9ebb23b16f1a4b2e0b03ec7919fc
+            value: quay.io/konflux-ci/tekton-catalog/task-buildah-remote-oci-ta:0.2@sha256:cfc8f89bc984ae8309df82ac15cc6e302832f48f51cc0bde56edb4f43e57ffcf
 
           - name: kind
             value: task
@@ -191,7 +191,7 @@ spec:
             value: build-image-index
 
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:715fa1fd7a8ebe0da552730e564eef340717b6346f1690ebe06685a252fe88bc
+            value: quay.io/konflux-ci/tekton-catalog/task-build-image-index:0.1@sha256:5da8c2f09990b801f1fd02a0ab3c4136845661e53c98e8a7ebf720774e064fac
 
           - name: kind
             value: task
@@ -402,7 +402,7 @@ spec:
             value: rpms-signature-scan
 
           - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:b627a8040f900bf359b50bfb5201907f73712ae5949270d57ea30cff11df078c
+            value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:0c9667fba291af05997397a32e5e938ccaa46e93a2e14bad228e64a6427c5545
 
           - name: kind
             value: task
