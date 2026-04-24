@@ -1,7 +1,10 @@
 
+# emacs editor files
+*~
+\#*\#
+
 .python-version
-
 config.yaml
-
 opt/
 .env
+myenv

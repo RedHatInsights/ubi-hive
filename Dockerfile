@@ -37,38 +37,42 @@ RUN mkdir -p ${HADOOP_HOME} ${METASTORE_HOME}
 RUN \
     --mount=type=secret,id=ACCESS_TOKEN \
     ACCESS_TOKEN=$(cat /run/secrets/ACCESS_TOKEN) && \
-    HADOOP_ARTIFACT_PATH=$(curl -L \
+    HADOOP_ARTIFACT_PATH=$(curl -fL \
         -H "Accept: application/vnd.github+json" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        https://api.github.com/repos/UrbanOS-Public/urbanos-hadoop/actions/artifacts | jq '. | .artifacts | .[0].archive_download_url' | tr -d '"' \
+        https://api.github.com/repos/UrbanOS-Public/urbanos-hadoop/actions/artifacts \
+        | jq -r '[.artifacts[] | select(.expired == false)] | .[0].archive_download_url' \
     ) && \
-    HIVE_ARTIFACT_PATH=$(curl -L \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer $ACCESS_TOKEN" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    https://api.github.com/repos/UrbanOS-Public/urbanos-hive/actions/artifacts | jq '. | .artifacts | .[0].archive_download_url' | tr -d '"' \
+    HIVE_ARTIFACT_PATH=$(curl -fL \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        https://api.github.com/repos/UrbanOS-Public/urbanos-hive/actions/artifacts \
+        | jq -r '[.artifacts[] | select(.expired == false)] | .[0].archive_download_url' \
     ) && \
-    echo $HIVE_ARTIFACT_PATH && \
-    echo $HADOOP_ARTIFACT_PATH && \
-    curl -L \
+    echo "Hadoop artifact: $HADOOP_ARTIFACT_PATH" && \
+    echo "Hive artifact: $HIVE_ARTIFACT_PATH" && \
+    [ -n "$HADOOP_ARTIFACT_PATH" ] && [ "$HADOOP_ARTIFACT_PATH" != "null" ] || (echo "ERROR: failed to resolve Hadoop artifact URL" && exit 1) && \
+    [ -n "$HIVE_ARTIFACT_PATH" ] && [ "$HIVE_ARTIFACT_PATH" != "null" ] || (echo "ERROR: failed to resolve Hive artifact URL" && exit 1) && \
+    curl -fL \
         -H "Accept: application/vnd.github+json" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        ${HADOOP_ARTIFACT_PATH} -o hadoop_artifact.zip && \
-        unzip hadoop_artifact.zip -d ${HADOOP_HOME} && \
-        tar -xvf ${HADOOP_HOME}/hadoop-3.3.tar -C ${HADOOP_HOME} --strip-components=1 && \
-        rm hadoop_artifact.zip && \
-        rm ${HADOOP_HOME}/hadoop-3.3.tar && \
-    curl -L \
+        "${HADOOP_ARTIFACT_PATH}" -o hadoop_artifact.zip && \
+    unzip hadoop_artifact.zip -d ${HADOOP_HOME} && \
+    tar -xvf ${HADOOP_HOME}/hadoop-3.3.tar -C ${HADOOP_HOME} --strip-components=1 && \
+    rm hadoop_artifact.zip && \
+    rm ${HADOOP_HOME}/hadoop-3.3.tar && \
+    curl -fL \
         -H "Accept: application/vnd.github+json" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        ${HIVE_ARTIFACT_PATH} -o hive_artifact.zip && \
-        unzip hive_artifact.zip -d ${METASTORE_HOME} && \
-        tar -xvf ${METASTORE_HOME}/hive-3.1.tar -C ${METASTORE_HOME} --strip-components=2 && \
-        rm hive_artifact.zip && \
-        rm ${METASTORE_HOME}/hive-3.1.tar
+        "${HIVE_ARTIFACT_PATH}" -o hive_artifact.zip && \
+    unzip hive_artifact.zip -d ${METASTORE_HOME} && \
+    tar -xvf ${METASTORE_HOME}/hive-3.1.tar -C ${METASTORE_HOME} --strip-components=2 && \
+    rm hive_artifact.zip && \
+    rm ${METASTORE_HOME}/hive-3.1.tar
 
 RUN \
     # Configure Hadoop AWS Jars to be available to hive
@@ -122,3 +126,4 @@ USER metastore
 EXPOSE 1000
 
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]
+
